@@ -9,8 +9,8 @@
 #include <memory>
 #include "BoltzmannOperator.hpp"
 #include "AbstractCollisionOperator.hpp"
-#include "../Quadratures/GaussLegendreQuadrature.hpp"
-#include "../Quadratures/SphericalQuadrature.hpp"
+#include "../Quadratures/GaussLegendre.hpp"
+#include "../Quadratures/SphericalDesign.hpp"
 
 // This function is related to the interaction kernel in the Boltzmann operator and will likely be
 // moved outside of this class for better modularity.
