@@ -7,6 +7,7 @@
 #include <complex>
 #include <string>
 #include <memory>
+#include <limits> // Move this to the generic header?
 #include "BoltzmannOperator.hpp"
 #include "AbstractCollisionOperator.hpp"
 #include "../Quadratures/GaussLegendre.hpp"
@@ -80,6 +81,9 @@ protected:
     // Shared pointers to quadrature objects
     const std::shared_ptr<GaussLegendreQuadrature> gl_quadrature;
     const std::shared_ptr<SphericalQuadrature> spherical_quadrature;
+
+    // Fourier modes for the velocity domain
+    std::vector<int> lx, ly, lz;
 
 private:
 

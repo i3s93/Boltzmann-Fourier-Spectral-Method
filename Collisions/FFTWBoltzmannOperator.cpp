@@ -8,6 +8,9 @@ reduction(	\
 	omp_out += omp_in )	\
 initializer( omp_priv = omp_orig )
 
+#define DEBUG_HERE() \
+    std::cerr << "DEBUG: " << __FILE__ << ":" << __LINE__ << " in " << __func__ << std::endl;
+
 // Initialize plans and arrays for the FFTW backend
 void BoltzmannOperator<FFTW_Backend>::initialize() {
     int grid_size = Nvx * Nvy * Nvz; // Total number of grid points
@@ -39,7 +42,6 @@ void BoltzmannOperator<FFTW_Backend>::initialize() {
 
     // Initialize the arrays for the Fourier modes
     // The modes are ordered as: [0,...,N/2 - 1, -N/2, ..., -1]
-    std::vector<int> lx, ly, lz;
     lx.reserve(Nvx);
     ly.reserve(Nvy);
     lz.reserve(Nvz);
@@ -93,11 +95,21 @@ void BoltzmannOperator<FFTW_Backend>::precomputeTransformWeights() {
     beta2 = (double*)fftw_malloc(grid_size*sizeof(double));
 
     // Extract the quadrature weights and nodes (using shallow copies)
-    gl_wts = gl_quadrature->getWeights();
-    gl_nodes = gl_quadrature->getNodes();
-    sx = spherical_quadrature->getx();
-    sy = spherical_quadrature->gety();
-    sz = spherical_quadrature->getz();
+    std::vector<double> gl_wts = gl_quadrature->getWeights();
+    std::vector<double> gl_nodes = gl_quadrature->getNodes();
+    std::vector<double> sx = spherical_quadrature->getx();
+    std::vector<double> sy = spherical_quadrature->gety();
+    std::vector<double> sz = spherical_quadrature->getz();
+
+    if (lx.empty() || ly.empty() || lz.empty()) {
+        throw std::runtime_error("lx, ly, or lz is not initialized");
+    }
+
+    if (sx.empty() || sy.empty() || sz.empty()) {
+        throw std::runtime_error("sx, sy, or sz is not initialized");
+    }
+
+
 
     #pragma omp parallel
     {
@@ -113,7 +125,7 @@ void BoltzmannOperator<FFTW_Backend>::precomputeTransformWeights() {
                     for (int k = 0; k < Nvz; ++k){
                         int idx5 = ((((r) * N_spherical + s) * Nvx + i) * Nvy + j) * Nvz + k;
                         double l_dot_sigma = lx[i]*sx[s] + ly[j]*sy[s] + lz[k]*sz[s];
-                        alpha1[idx5] = std::exp(std::complex<double>(0,-(pi/(2*L))*nodes_gl[r]*l_dot_sigma));                   
+                        alpha1[idx5] = std::exp(std::complex<double>(0,-(pi/(2*L))*gl_nodes[r]*l_dot_sigma));                   
                     }
                 }
             }
@@ -129,7 +141,7 @@ void BoltzmannOperator<FFTW_Backend>::precomputeTransformWeights() {
                 for (int k = 0; k < Nvz; ++k){
                     int idx4 = (((r * Nvx + i) * Nvy + j) * Nvz + k);
                     double norm_l = std::sqrt(lx[i]*lx[i] + ly[j]*ly[j] + lz[k]*lz[k]);
-                    beta1[idx4] = 4*pi*b_gamma*sincc(pi*nodes_gl[r]*norm_l/(2*L));
+                    beta1[idx4] = 4*pi*b_gamma*sincc(pi*gl_nodes[r]*norm_l/(2*L));
                 }
             }
         }
@@ -149,7 +161,7 @@ void BoltzmannOperator<FFTW_Backend>::precomputeTransformWeights() {
 
                 #pragma omp simd reduction(+:beta2[idx3])
                 for (int r = 0; r < N_gl; ++r){
-                    beta2[idx3] += 16*pi*pi*b_gamma*gl_wts[r]*std::pow(nodes_gl[r], gamma+2)*sincc(pi*nodes_gl[r]*norm_l/L);
+                    beta2[idx3] += 16*pi*pi*b_gamma*gl_wts[r]*std::pow(gl_nodes[r], gamma+2)*sincc(pi*gl_nodes[r]*norm_l/L);
                 }
             }
         }
@@ -163,9 +175,15 @@ void BoltzmannOperator<FFTW_Backend>::precomputeTransformWeights() {
 void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double * f_in) {
 
     // Retrieve information from the quadrature objects
-    gl_wts = gl_quadrature->getWeights();
-    gl_nodes = gl_quadrature->getNodes();
-    spherical_wts = spherical_quadrature->getWeights();
+    int N_gl = gl_quadrature->getNumberOfPoints();
+    int N_spherical = spherical_quadrature->getNumberOfPoints();    
+
+    std::vector<double> gl_wts = gl_quadrature->getWeights();
+    std::vector<double> gl_nodes = gl_quadrature->getNodes();
+    std::vector<double> spherical_wts = spherical_quadrature->getWeights();
+
+    int grid_size = Nvx * Nvy * Nvz; // Total number of velocity grid points
+    int batch_size = N_gl * N_spherical; // Total number of grid_size batchesi
 
     #pragma omp parallel
     {
@@ -202,9 +220,10 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
                 for (int j = 0; j < Nvy; ++j){
                     #pragma omp simd
                     for (int k = 0; k < Nvz; ++k){
+                        int idx3 = (i * Nvy + j) * Nvz + k;
                         int idx5 = ((((r) * N_spherical + s) * Nvx + i) * Nvy + j) * Nvz + k;
-                        alpha1_times_f_hat[idx5] = fft_scale*alpha1[idx5]*f_hat[idx5];
-                        alpha2_times_f_hat[idx5] = fft_scale*std::conj(alpha1[idx5])*f_hat[idx5];
+                        alpha1_times_f_hat[idx5] = fft_scale*alpha1[idx5]*f_hat[idx3];
+                        alpha2_times_f_hat[idx5] = fft_scale*std::conj(alpha1[idx5])*f_hat[idx3];
                     }
                 }
             }
@@ -300,7 +319,7 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
         reinterpret_cast<fftw_complex*>(beta2_times_f));
 
     #pragma omp barrier
-    
+
     // Compute Q = real(Q_gain) - real(Q_loss)
     #pragma omp for collapse(2)
     for (int i = 0; i < Nvx; ++i){
@@ -320,7 +339,7 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
 
 
 // Class destructor to clean up FFTW resources
-void BoltzmannOperator<FFTW_Backend>::~BoltzmannOperator() {
+BoltzmannOperator<FFTW_Backend>::~BoltzmannOperator() {
 
     // Clean up FFTW plans
     fftw_destroy_plan(forward_plan);

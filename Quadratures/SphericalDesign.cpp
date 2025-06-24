@@ -8,16 +8,17 @@ SphericalDesign::SphericalDesign(int N) : N(N) {
         throw std::invalid_argument("Number of points N must be a positive integer");
     }
     // Initialize the filename based on N
+    // TO-DO: Remove the hard coded path... and replace it with something more robust
     switch (N) {
-        case 6:   filename = "ss003.006.txt"; break;
-        case 12:  filename = "ss005.012.txt"; break;
-        case 32:  filename = "ss007.032.txt"; break;
-        case 48:  filename = "ss009.048.txt"; break;
-        case 70:  filename = "ss011.070.txt"; break;
-        case 94:  filename = "ss013.094.txt"; break;
-        case 120: filename = "ss015.120.txt"; break;
-        case 156: filename = "ss017.156.txt"; break;
-        case 192: filename = "ss019.192.txt"; break;
+        case 6:   filename = "/global/homes/w/wsands/Projects/Boltzmann-Fourier-Spectral-Method/Quadratures/ss003.006.txt"; break;
+        case 12:  filename = "/global/homes/w/wsands/Projects/Boltzmann-Fourier-Spectral-Method/Quadratures/ss005.012.txt"; break;
+        case 32:  filename = "/global/homes/w/wsands/Projects/Boltzmann-Fourier-Spectral-Method/Quadratures/ss007.032.txt"; break;
+        case 48:  filename = "/global/homes/w/wsands/Projects/Boltzmann-Fourier-Spectral-Method/Quadratures/ss009.048.txt"; break;
+        case 70:  filename = "/global/homes/w/wsands/Projects/Boltzmann-Fourier-Spectral-Method/Quadratures/ss011.070.txt"; break;
+        case 94:  filename = "/global/homes/w/wsands/Projects/Boltzmann-Fourier-Spectral-Method/Quadratures/ss013.094.txt"; break;
+        case 120: filename = "/global/homes/w/wsands/Projects/Boltzmann-Fourier-Spectral-Method/Quadratures/ss015.120.txt"; break;
+        case 156: filename = "/global/homes/w/wsands/Projects/Boltzmann-Fourier-Spectral-Method/Quadratures/ss017.156.txt"; break;
+        case 192: filename = "/global/homes/w/wsands/Projects/Boltzmann-Fourier-Spectral-Method/Quadratures/ss019.192.txt"; break;
         default:
             throw std::invalid_argument("Invalid value of N");
     }

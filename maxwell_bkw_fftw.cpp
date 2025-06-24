@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
 
     // Build the velocity domain as a tensor product grid
     const double dv = 2*L/Nv;
-    std::vector<double> vx(Nv,0);
+    std::vector<double> vx(Nv);
 
     for (int i = 0; i < Nv; ++i){
         vx[i] = -L + dv/2 + i*dv;
@@ -84,7 +84,7 @@ int main(int argc, char** argv) {
             #pragma omp simd
             for (int k = 0; k < Nv; ++k){
                 int idx3 = (i * Nv + j) * Nv + k;
-                double r_sq = std::pow(vx[i],2) + std::pow(vy[j],2) + std::pow(vz[k],2);
+                double r_sq = vx[i]*vx[i] + vy[j]*vy[j] + vz[k]*vz[k];;
                 
                 // Compute the BKW solution
                 f_bkw[idx3] = std::exp(-(r_sq)/(2*K))*((5*K-3)/K+(1-K)/(std::pow(K,2))*(r_sq));
@@ -118,13 +118,13 @@ int main(int argc, char** argv) {
     collision_operator.initialize();
     double initialize_end_time = omp_get_wtime();
     double initialize_total_time = initialize_end_time - initialize_time;
-    std::cout << "Initialization time: " << initialize_total_time << " seconds\n";
+    std::cout << "Initialization time (s): " << initialize_total_time << " seconds\n";
 
     double precompute_time = omp_get_wtime();
     collision_operator.precomputeTransformWeights();
     double precompute_end_time = omp_get_wtime();
     double precompute_total_time = precompute_end_time - precompute_time;
-    std::cout << "Precomputation time: " << precompute_total_time << " seconds\n";
+    std::cout << "Precomputation time (s): " << precompute_total_time << " seconds\n";
 
     // Container to hold the run data CPU
     std::vector<double> collision_times;
@@ -139,8 +139,9 @@ int main(int argc, char** argv) {
         collision_times.push_back(end_time - start_time);
 
     }
-    
-    print_stats_summary("FFTW", run_times);
+
+    // TO-DO: Fix the output of this function... the times should be in seconds
+    print_stats_summary("FFTW", collision_times);
 
     // Check the errors in the different norms and print them to the console
     double err_L1 = 0;
