@@ -6,9 +6,11 @@
 #include <cmath>
 #include <complex>
 #include <string>
-#include <limits>
-
+#include <memory>
+#include "BoltzmannOperator.hpp"
 #include "AbstractCollisionOperator.hpp"
+#include "../Quadratures/GaussLegendreQuadrature.hpp"
+#include "../Quadratures/SphericalQuadrature.hpp"
 
 // This function is related to the interaction kernel in the Boltzmann operator and will likely be
 // moved outside of this class for better modularity.
@@ -20,17 +22,18 @@ T sincc(T x){
 
 struct FFTW_Backend {};
 
+template <>
 class BoltzmannOperator<FFTW_Backend> : public AbstractCollisionOperator<FFTW_Backend> {
 public:
     // Constructor which accepts Gauss-Legendre and spherical quadrature objects as
     // well as the number of grid points in each velocity direction
     BoltzmannOperator(std::shared_ptr<GaussLegendreQuadrature> gl_quadrature,
-                      std::shared_ptr<SphericalQuadrature> spherical_quadrature, 
-                      int Nvx, int Nvy, int Nvz, double gamma, double b_gamma, double L), 
-                    : gl_quadrature(gl_quadrature),
-                    spherical_quadrature(spherical_quadrature),
-                    Nvx(Nvx), Nvy(Nvy), Nvz(Nvz), 
-                    gamma(gamma), b_gamma(b_gamma), L(L) {}
+        std::shared_ptr<SphericalQuadrature> spherical_quadrature, 
+        int Nvx, int Nvy, int Nvz, double gamma, double b_gamma, double L)
+        : gl_quadrature(gl_quadrature),
+        spherical_quadrature(spherical_quadrature),
+        Nvx(Nvx), Nvy(Nvy), Nvz(Nvz), 
+        gamma(gamma), b_gamma(b_gamma), L(L) {}
 
     // Set the filename for the FFTW3 wisdom file if one is available
     void setWisdomFileName(const std::string& filename) {
