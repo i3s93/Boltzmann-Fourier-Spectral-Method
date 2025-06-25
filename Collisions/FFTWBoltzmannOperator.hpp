@@ -87,21 +87,18 @@ protected:
 
 private:
 
-    // Scaling for the FFTs for normalization
-    double fft_scale;
-
     // Weights needed for the Fourier transforms
     std::complex<double>* alpha1;
     double* beta1;
     double* beta2;
 
-    // We will store optimized plans for a 3D dataset
-    fftw_plan forward_plan;
-    fftw_plan backward_plan;
-
-    // Data pointers (place-holders) for a single optimized FFT/iFFT
-    std::complex<double>* data_in;
-    std::complex<double>* data_out;
+    // Plans for the transforms
+    fftw_plan fft_f;
+    fftw_plan ifft_alpha1_times_f_hat;
+    fftw_plan ifft_alpha2_times_f_hat;
+    fftw_plan fft_product;
+    fftw_plan ifft_Q_gain_hat;
+    fftw_plan ifft_beta2_times_f_hat;
 
     std::complex<double>* f; // This will eventually be removed...
     std::complex<double>* f_hat; // FFTW array for f_hat

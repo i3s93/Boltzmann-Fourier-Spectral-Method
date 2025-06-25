@@ -54,9 +54,9 @@ template<typename T>
 void print_stats_summary(const std::string &device_name, const std::vector<T> &data){
     std::cout << "\nRun statistics for " << device_name << std::endl;
     std::cout << "Total number of samples taken: " << data.size() << std::endl;
-    std::cout << std::scientific << std::setprecision(8) << "Mean runtime (ms): " << mean(data) << "\n";
-    std::cout << std::scientific << std::setprecision(8) << "Min runtime (ms): " << min(data) << "\n";
-    std::cout << std::scientific << std::setprecision(8) << "Max runtime (ms): " << max(data) << "\n";
+    std::cout << std::scientific << std::setprecision(8) << "Mean runtime (s): " << mean(data) << "\n";
+    std::cout << std::scientific << std::setprecision(8) << "Min runtime (s): " << min(data) << "\n";
+    std::cout << std::scientific << std::setprecision(8) << "Max runtime (s): " << max(data) << "\n";
     std::cout << std::scientific << std::setprecision(8) << "stdev: " << stdev(data) << "\n";
     std::cout << "\n";
     return;

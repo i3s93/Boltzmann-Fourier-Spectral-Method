@@ -8,18 +8,13 @@ reduction(	\
 	omp_out += omp_in )	\
 initializer( omp_priv = omp_orig )
 
-#define DEBUG_HERE() \
-    std::cerr << "DEBUG: " << __FILE__ << ":" << __LINE__ << " in " << __func__ << std::endl;
-
 // Initialize plans and arrays for the FFTW backend
 void BoltzmannOperator<FFTW_Backend>::initialize() {
+
     int grid_size = Nvx * Nvy * Nvz; // Total number of grid points
     int N_gl = gl_quadrature->getNumberOfPoints(); // Number of Gauss-Legendre quadrature points
     int N_spherical = spherical_quadrature->getNumberOfPoints(); // Number of spherical quadrature points
     int batch_size = N_gl * N_spherical; // Total number of grid_size batches
-
-    // Initialize the scaling for the transforms
-    double fft_scale = 1.0 / grid_size;
 
     // Allocations for the various transforms involved (including forward and backward)
     f = (std::complex<double>*)fftw_malloc(grid_size * sizeof(std::complex<double>));
@@ -41,7 +36,6 @@ void BoltzmannOperator<FFTW_Backend>::initialize() {
     beta2_times_f_hat = (std::complex<double>*)fftw_malloc(grid_size * sizeof(std::complex<double>));
 
     // Initialize the arrays for the Fourier modes
-    // The modes are ordered as: [0,...,N/2 - 1, -N/2, ..., -1]
     lx.reserve(Nvx);
     ly.reserve(Nvy);
     lz.reserve(Nvz);
@@ -60,21 +54,50 @@ void BoltzmannOperator<FFTW_Backend>::initialize() {
         std::cout << "Failed to import wisdom from file: " << wisdom_fname << "\n";
     }
 
-    // Allocate some placeholders for the FFTW plans
-    data_in = (std::complex<double>*)fftw_malloc(grid_size * sizeof(std::complex<double>));
-    data_out = (std::complex<double>*)fftw_malloc(batch_size * grid_size * sizeof(std::complex<double>));
+    fft_f = fftw_plan_dft_3d(Nvx, Nvy, Nvz, 
+                                       reinterpret_cast<fftw_complex*>(f), 
+                                       reinterpret_cast<fftw_complex*>(f_hat), 
+                                       FFTW_FORWARD, FFTW_ESTIMATE);
 
-    // Create and store plans for the forward/backward transforms
-    // These will be reused, so we look for the optimal plan configuration
-    forward_plan  = fftw_plan_dft_3d(Nvx, Nvy, Nvz,
-        reinterpret_cast<fftw_complex*>(data_in),
-        reinterpret_cast<fftw_complex*>(data_out),
-        FFTW_FORWARD, FFTW_MEASURE); // Try FFTW_EXHAUSTIVE for more speed?
+    int batched_rank = 3; // Each FFT is applied to a three-dimensional row-major array
+    int batched_dims[] = {Nvx, Nvy, Nvz}; // Dimensions of the arrays used in each transform
+    int idist = grid_size; // Input array is separated by idist elements
+    int odist = idist; // Output array is separated by odist elements
+    int istride = 1; // Input array is contiguous in memory
+    int ostride = 1; // Output array is contiguous in memory
+    int *inembed = batched_dims; // The array is not embedded in a larger array
+    int *onembed = batched_dims; // The array is not embedded in a larger array
 
-    backward_plan = fftw_plan_dft_3d(Nvx, Nvy, Nvz,
-        reinterpret_cast<fftw_complex*>(data_in),
-        reinterpret_cast<fftw_complex*>(data_out),
-        FFTW_BACKWARD, FFTW_MEASURE); // Try FFTW_EXHAUSTIVE for more speed?       
+    ifft_alpha1_times_f_hat = fftw_plan_many_dft(batched_rank, batched_dims, batch_size,
+                                                 reinterpret_cast<fftw_complex*>(alpha1_times_f_hat), 
+                                                 inembed, istride, idist,
+                                                 reinterpret_cast<fftw_complex*>(alpha1_times_f),
+                                                 onembed, ostride, odist,
+                                                 FFTW_BACKWARD, FFTW_ESTIMATE);
+
+    ifft_alpha2_times_f_hat = fftw_plan_many_dft(batched_rank, batched_dims, batch_size,
+                                                 reinterpret_cast<fftw_complex*>(alpha2_times_f_hat), 
+                                                 inembed, istride, idist,
+                                                 reinterpret_cast<fftw_complex*>(alpha2_times_f),
+                                                 onembed, ostride, odist,
+                                                 FFTW_BACKWARD, FFTW_ESTIMATE);
+
+    fft_product = fftw_plan_many_dft(batched_rank, batched_dims, batch_size,
+                                     reinterpret_cast<fftw_complex*>(transform_prod), 
+                                     inembed, istride, idist,
+                                     reinterpret_cast<fftw_complex*>(transform_prod_hat),
+                                     onembed, ostride, odist,
+                                     FFTW_FORWARD, FFTW_ESTIMATE);
+
+    ifft_Q_gain_hat = fftw_plan_dft_3d(Nvx, Nvy, Nvz, 
+                                       reinterpret_cast<fftw_complex*>(Q_gain_hat), 
+                                       reinterpret_cast<fftw_complex*>(Q_gain), 
+                                       FFTW_BACKWARD, FFTW_ESTIMATE);
+
+    ifft_beta2_times_f_hat = fftw_plan_dft_3d(Nvx, Nvy, Nvz, 
+                                              reinterpret_cast<fftw_complex*>(beta2_times_f_hat), 
+                                              reinterpret_cast<fftw_complex*>(beta2_times_f), 
+                                              FFTW_BACKWARD, FFTW_ESTIMATE); 
 
     // Export wisdom immediately after plan creation using the specified filename
     fftw_export_wisdom_to_filename(wisdom_fname.c_str());
@@ -83,6 +106,7 @@ void BoltzmannOperator<FFTW_Backend>::initialize() {
 
 // Precompute the transform weights alpha1, beta1, beta2
 void BoltzmannOperator<FFTW_Backend>::precomputeTransformWeights() {
+
     int grid_size = Nvx * Nvy * Nvz; // Total number of grid points
     int N_gl = gl_quadrature->getNumberOfPoints(); // Number of Gauss-Legendre quadrature points
     int N_spherical = spherical_quadrature->getNumberOfPoints(); // Number of spherical quadrature points
@@ -90,11 +114,12 @@ void BoltzmannOperator<FFTW_Backend>::precomputeTransformWeights() {
 
     // Allocate space for the transform weights
     // Note: alpha2 = conj(alpha1) so we don't store it
-    alpha1 = (std::complex<double>*)fftw_malloc(batch_size*grid_size*sizeof(std::complex<double>)); 
-    beta1 = (double*)fftw_malloc(N_gl*grid_size*sizeof(double));
-    beta2 = (double*)fftw_malloc(grid_size*sizeof(double));
+    alpha1 = (std::complex<double>*)fftw_malloc(batch_size * grid_size * sizeof(std::complex<double>)); 
+    beta1 = (double*)fftw_malloc(N_gl * grid_size * sizeof(double));
+    beta2 = (double*)fftw_malloc(grid_size * sizeof(double));
 
     // Extract the quadrature weights and nodes (using shallow copies)
+    // Make sure no copies are performed here...
     std::vector<double> gl_wts = gl_quadrature->getWeights();
     std::vector<double> gl_nodes = gl_quadrature->getNodes();
     std::vector<double> sx = spherical_quadrature->getx();
@@ -109,19 +134,16 @@ void BoltzmannOperator<FFTW_Backend>::precomputeTransformWeights() {
         throw std::runtime_error("sx, sy, or sz is not initialized");
     }
 
-
-
     #pragma omp parallel
     {
 
     // Compute the complex transform weights alpha1
     // Note that we do not compute alpha2 since it is the conjugate of alpha1
-    #pragma omp for collapse(4)
+    #pragma omp for collapse(5)
     for (int r = 0; r < N_gl; ++r){
         for (int s = 0; s < N_spherical; ++s){
             for (int i = 0; i < Nvx; ++i){
                 for (int j = 0; j < Nvy; ++j){
-                    #pragma omp simd
                     for (int k = 0; k < Nvz; ++k){
                         int idx5 = ((((r) * N_spherical + s) * Nvx + i) * Nvy + j) * Nvz + k;
                         double l_dot_sigma = lx[i]*sx[s] + ly[j]*sy[s] + lz[k]*sz[s];
@@ -133,11 +155,10 @@ void BoltzmannOperator<FFTW_Backend>::precomputeTransformWeights() {
     }
 
     // Compute the real transform weights beta1
-    #pragma omp for collapse(3)
+    #pragma omp for collapse(4)
     for (int r = 0; r < N_gl; ++r){
         for (int i = 0; i < Nvx; ++i){
             for (int j = 0; j < Nvy; ++j){
-                #pragma omp simd
                 for (int k = 0; k < Nvz; ++k){
                     int idx4 = (((r * Nvx + i) * Nvy + j) * Nvz + k);
                     double norm_l = std::sqrt(lx[i]*lx[i] + ly[j]*ly[j] + lz[k]*lz[k]);
@@ -156,7 +177,6 @@ void BoltzmannOperator<FFTW_Backend>::precomputeTransformWeights() {
                 // Initialize beta2 to zero (since we need to accumulate values)
                 int idx3 = (i * Nvy + j) * Nvz + k;
                 beta2[idx3] = 0.0;
-
                 double norm_l = std::sqrt(lx[i]*lx[i] + ly[j]*ly[j] + lz[k]*lz[k]);
 
                 #pragma omp simd reduction(+:beta2[idx3])
@@ -183,17 +203,13 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
     std::vector<double> spherical_wts = spherical_quadrature->getWeights();
 
     int grid_size = Nvx * Nvy * Nvz; // Total number of velocity grid points
-    int batch_size = N_gl * N_spherical; // Total number of grid_size batchesi
-
-    #pragma omp parallel
-    {
+    int batch_size = N_gl * N_spherical; // Total number of grid_size batches
+    double fft_scale = 1.0 / grid_size; // Scaling used to normalize transforms
 
     // Initialize the input as a complex array
     // Line with f will be removed later when we switch to r2c and c2r transforms
-    #pragma omp for collapse(2)
     for (int i = 0; i < Nvx; ++i){
         for (int j = 0; j < Nvy; ++j){
-            #pragma omp simd
             for (int k = 0; k < Nvz; ++k){
                 int idx3 = (i * Nvy + j) * Nvz + k;
                 f[idx3] = f_in[idx3];
@@ -202,23 +218,14 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
         }
     }
 
-    #pragma omp barrier
-
     // Execute FFT(f)
-    #pragma omp single
-    fftw_execute_dft(forward_plan,
-        reinterpret_cast<fftw_complex*>(f),
-        reinterpret_cast<fftw_complex*>(f_hat));
-
-    #pragma omp barrier
+    fftw_execute(fft_f);
 
     // Compute alpha1_times_f_hat and alpha2_times_f_hat
-    #pragma omp for collapse(4)
     for (int r = 0; r < N_gl; ++r){
         for (int s = 0; s < N_spherical; ++s){
             for (int i = 0; i < Nvx; ++i){
                 for (int j = 0; j < Nvy; ++j){
-                    #pragma omp simd
                     for (int k = 0; k < Nvz; ++k){
                         int idx3 = (i * Nvy + j) * Nvz + k;
                         int idx5 = ((((r) * N_spherical + s) * Nvx + i) * Nvy + j) * Nvz + k;
@@ -230,29 +237,15 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
         }
     }
 
-    #pragma omp barrier
-
     // Compute batched iFFTs of alpha1_times_f_hat, alpha2_times_f_hat in parallel
-    #pragma omp for
-    for (int b = 0; b < batch_size; ++b) {
-        fftw_execute_dft(backward_plan,
-            reinterpret_cast<fftw_complex*>(alpha1_times_f_hat + b * grid_size),
-            reinterpret_cast<fftw_complex*>(alpha1_times_f + b * grid_size));
-
-        fftw_execute_dft(backward_plan,
-            reinterpret_cast<fftw_complex*>(alpha2_times_f_hat + b * grid_size),
-            reinterpret_cast<fftw_complex*>(alpha2_times_f + b * grid_size));
-    }
-
-    #pragma omp barrier
-
+    fftw_execute(ifft_alpha1_times_f_hat);
+    fftw_execute(ifft_alpha2_times_f_hat);
+ 
     // Compute the product of the transforms in the physical domain
-    #pragma omp for collapse(4)
     for (int r = 0; r < N_gl; ++r){
         for (int s = 0; s < N_spherical; ++s){
             for (int i = 0; i < Nvx; ++i){
                 for (int j = 0; j < Nvy; ++j){
-                    #pragma omp simd
                     for (int k = 0; k < Nvz; ++k){
                         int idx5 = ((((r) * N_spherical + s) * Nvx + i) * Nvy + j) * Nvz + k;
                         transform_prod[idx5] = alpha1_times_f[idx5]*alpha2_times_f[idx5];
@@ -262,25 +255,14 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
         }
     }
 
-    #pragma omp barrier
-
-    // Compute a batched FFT of the product to go back to the frequency domain
-    #pragma omp for
-    for (int b = 0; b < batch_size; ++b) {
-        fftw_execute_dft(forward_plan,
-            reinterpret_cast<fftw_complex*>(transform_prod + b * grid_size),
-            reinterpret_cast<fftw_complex*>(transform_prod_hat + b * grid_size));
-    }
-
-    #pragma omp barrier
+    // Apply a batched FFT to the product
+    fftw_execute(fft_product);
 
     // Compute the gain term in the frequency domain
-    #pragma omp for collapse(4) reduction(+:Q_gain_hat[:grid_size])
     for (int r = 0; r < N_gl; ++r){
         for (int s = 0; s < N_spherical; ++s){
             for (int i = 0; i < Nvx; ++i){
                 for (int j = 0; j < Nvy; ++j){
-                    #pragma omp simd
                     for (int k = 0; k < Nvz; ++k){
                         int idx3 = (i * Nvy + j) * Nvz + k;
                         int idx4 = (((r * Nvx + i) * Nvy + j) * Nvz + k);
@@ -293,10 +275,8 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
     }
 
     // Apply weights beta2 to f_hat and normalize
-    #pragma omp for collapse(2)
     for (int i = 0; i < Nvx; ++i){
         for (int j = 0; j < Nvy; ++j){
-            #pragma omp simd
             for (int k = 0; k < Nvz; ++k){
                 int idx3 = (i * Nvy + j) * Nvz + k;
                 beta2_times_f_hat[idx3] = fft_scale*beta2[idx3]*f_hat[idx3];
@@ -304,27 +284,15 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
         }
     }
 
-    #pragma omp barrier
+    // Transform Q_gain back to physical space
+    fftw_execute(ifft_Q_gain_hat);
 
-    // Compute the gain term in the physical domain
-    #pragma omp single
-    fftw_execute_dft(backward_plan,
-        reinterpret_cast<fftw_complex*>(Q_gain_hat),
-        reinterpret_cast<fftw_complex*>(Q_gain));
-    
-    // iFFT beta2_times_f_hat back to the physical domain
-    #pragma omp single
-    fftw_execute_dft(backward_plan,
-        reinterpret_cast<fftw_complex*>(beta2_times_f_hat),
-        reinterpret_cast<fftw_complex*>(beta2_times_f));
-
-    #pragma omp barrier
+    // Transform beta2_times_f_hat back to physical space
+    fftw_execute(ifft_beta2_times_f_hat);
 
     // Compute Q = real(Q_gain) - real(Q_loss)
-    #pragma omp for collapse(2)
     for (int i = 0; i < Nvx; ++i){
         for (int j = 0; j < Nvy; ++j){
-            #pragma omp simd
             for (int k = 0; k < Nvz; ++k){
                 int idx3 = (i * Nvy + j) * Nvz + k;
                 std::complex<double> Q_loss = beta2_times_f[idx3]*f[idx3];
@@ -333,7 +301,6 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
         }
     }
 
-    } // End of parallel region
 
 }; // End of computeCollision
 
@@ -342,13 +309,14 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
 BoltzmannOperator<FFTW_Backend>::~BoltzmannOperator() {
 
     // Clean up FFTW plans
-    fftw_destroy_plan(forward_plan);
-    fftw_destroy_plan(backward_plan);
+    fftw_destroy_plan(fft_f);
+    fftw_destroy_plan(ifft_alpha1_times_f_hat);
+    fftw_destroy_plan(ifft_alpha2_times_f_hat);
+    fftw_destroy_plan(fft_product);
+    fftw_destroy_plan(ifft_Q_gain_hat);
+    fftw_destroy_plan(ifft_beta2_times_f_hat);
 
     // Free allocated arrays for the transforms and weights
-    fftw_free(data_in);
-    fftw_free(data_out);
-    
     fftw_free(f);
     fftw_free(f_hat);
 

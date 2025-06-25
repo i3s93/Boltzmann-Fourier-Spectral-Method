@@ -70,6 +70,8 @@ int main(int argc, char** argv) {
     std::vector<double> vy = vx;
     std::vector<double> vz = vx;
 
+    //for(auto &e:vx) std::cout << e << "\n";
+
     // Setup the BKW solution then find the corresponding collision operator Q
     const double t = 6.5;
     const double K = 1 - std::exp(-t/6);
@@ -78,10 +80,9 @@ int main(int argc, char** argv) {
     double * f_bkw = (double *)fftw_malloc(Nv*Nv*Nv*sizeof(double));
     double * Q_bkw = (double *)fftw_malloc(Nv*Nv*Nv*sizeof(double));
 
-    #pragma omp parallel for collapse (2)
+    #pragma omp parallel for collapse (3)
     for (int i = 0; i < Nv; ++i){
         for (int j = 0; j < Nv; ++j){
-            #pragma omp simd
             for (int k = 0; k < Nv; ++k){
                 int idx3 = (i * Nv + j) * Nv + k;
                 double r_sq = vx[i]*vx[i] + vy[j]*vy[j] + vz[k]*vz[k];;
@@ -99,12 +100,9 @@ int main(int argc, char** argv) {
     }
 
     // Compute the quadrature rules and store their information in the solver
-    std::shared_ptr<GaussLegendreQuadrature> gl_quadrature;
-    gl_quadrature = std::make_shared<GaussLegendreQuadrature>(Nv, 0, R);
-
-    std::shared_ptr<SphericalQuadrature> spherical_quadrature;
-    spherical_quadrature = std::make_shared<SphericalDesign>(Ns);
-
+    auto gl_quadrature = std::make_shared<GaussLegendreQuadrature>(Nv, 0, R);
+    auto spherical_quadrature = std::make_shared<SphericalDesign>(Ns);
+    
     // Allocate space for the output of the collision operator
     double * Q = (double *)fftw_malloc(Nv*Nv*Nv*sizeof(double));
 
@@ -140,7 +138,6 @@ int main(int argc, char** argv) {
 
     }
 
-    // TO-DO: Fix the output of this function... the times should be in seconds
     print_stats_summary("FFTW", collision_times);
 
     // Check the errors in the different norms and print them to the console
