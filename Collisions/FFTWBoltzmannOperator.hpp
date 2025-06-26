@@ -87,20 +87,20 @@ protected:
 
 private:
 
-    // Weights needed for the Fourier transforms
+    // Plans for the transforms
+    fftw_plan fft_plan;
+    fftw_plan ifft_plan;
+
+    // Weights needed to scale the transforms
     std::complex<double>* alpha1;
     double* beta1;
     double* beta2;
 
-    // Plans for the transforms
-    fftw_plan fft_f;
-    fftw_plan ifft_alpha1_times_f_hat;
-    fftw_plan ifft_alpha2_times_f_hat;
-    fftw_plan fft_product;
-    fftw_plan ifft_Q_gain_hat;
-    fftw_plan ifft_beta2_times_f_hat;
+    // Generic arrays to create plans for the forward and inverse transforms 
+    std::complex<double>* data;
+    std::complex<double>* data_hat;
 
-    std::complex<double>* f; // This will eventually be removed...
+    std::complex<double>* f; // Storage for the input transform
     std::complex<double>* f_hat; // FFTW array for f_hat
     
     std::complex<double>* alpha1_times_f; // FFTW array for alpha1*f

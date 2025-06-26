@@ -16,7 +16,15 @@ void BoltzmannOperator<FFTW_Backend>::initialize() {
     int N_spherical = spherical_quadrature->getNumberOfPoints(); // Number of spherical quadrature points
     int batch_size = N_gl * N_spherical; // Total number of grid_size batches
 
-    // Allocations for the various transforms involved (including forward and backward)
+    // Allocations for the arrays used the operator
+    // Note: alpha2 = conj(alpha1) so we don't store it
+    alpha1 = (std::complex<double>*)fftw_malloc(batch_size * grid_size * sizeof(std::complex<double>)); 
+    beta1 = (double*)fftw_malloc(N_gl * grid_size * sizeof(double));
+    beta2 = (double*)fftw_malloc(grid_size * sizeof(double));
+
+    data = (std::complex<double>*)fftw_malloc(grid_size * sizeof(std::complex<double>));
+    data_hat = (std::complex<double>*)fftw_malloc(grid_size * sizeof(std::complex<double>));
+
     f = (std::complex<double>*)fftw_malloc(grid_size * sizeof(std::complex<double>));
     f_hat = (std::complex<double>*)fftw_malloc(grid_size * sizeof(std::complex<double>));
         
@@ -54,50 +62,15 @@ void BoltzmannOperator<FFTW_Backend>::initialize() {
         std::cout << "Failed to import wisdom from file: " << wisdom_fname << "\n";
     }
 
-    fft_f = fftw_plan_dft_3d(Nvx, Nvy, Nvz, 
-                                       reinterpret_cast<fftw_complex*>(f), 
-                                       reinterpret_cast<fftw_complex*>(f_hat), 
-                                       FFTW_FORWARD, FFTW_ESTIMATE);
+    fft_plan  = fftw_plan_dft_3d(Nvx, Nvy, Nvz,
+        reinterpret_cast<fftw_complex*>(data),
+        reinterpret_cast<fftw_complex*>(data_hat),
+        FFTW_FORWARD, FFTW_ESTIMATE);
 
-    int batched_rank = 3; // Each FFT is applied to a three-dimensional row-major array
-    int batched_dims[] = {Nvx, Nvy, Nvz}; // Dimensions of the arrays used in each transform
-    int idist = grid_size; // Input array is separated by idist elements
-    int odist = idist; // Output array is separated by odist elements
-    int istride = 1; // Input array is contiguous in memory
-    int ostride = 1; // Output array is contiguous in memory
-    int *inembed = batched_dims; // The array is not embedded in a larger array
-    int *onembed = batched_dims; // The array is not embedded in a larger array
-
-    ifft_alpha1_times_f_hat = fftw_plan_many_dft(batched_rank, batched_dims, batch_size,
-                                                 reinterpret_cast<fftw_complex*>(alpha1_times_f_hat), 
-                                                 inembed, istride, idist,
-                                                 reinterpret_cast<fftw_complex*>(alpha1_times_f),
-                                                 onembed, ostride, odist,
-                                                 FFTW_BACKWARD, FFTW_ESTIMATE);
-
-    ifft_alpha2_times_f_hat = fftw_plan_many_dft(batched_rank, batched_dims, batch_size,
-                                                 reinterpret_cast<fftw_complex*>(alpha2_times_f_hat), 
-                                                 inembed, istride, idist,
-                                                 reinterpret_cast<fftw_complex*>(alpha2_times_f),
-                                                 onembed, ostride, odist,
-                                                 FFTW_BACKWARD, FFTW_ESTIMATE);
-
-    fft_product = fftw_plan_many_dft(batched_rank, batched_dims, batch_size,
-                                     reinterpret_cast<fftw_complex*>(transform_prod), 
-                                     inembed, istride, idist,
-                                     reinterpret_cast<fftw_complex*>(transform_prod_hat),
-                                     onembed, ostride, odist,
-                                     FFTW_FORWARD, FFTW_ESTIMATE);
-
-    ifft_Q_gain_hat = fftw_plan_dft_3d(Nvx, Nvy, Nvz, 
-                                       reinterpret_cast<fftw_complex*>(Q_gain_hat), 
-                                       reinterpret_cast<fftw_complex*>(Q_gain), 
-                                       FFTW_BACKWARD, FFTW_ESTIMATE);
-
-    ifft_beta2_times_f_hat = fftw_plan_dft_3d(Nvx, Nvy, Nvz, 
-                                              reinterpret_cast<fftw_complex*>(beta2_times_f_hat), 
-                                              reinterpret_cast<fftw_complex*>(beta2_times_f), 
-                                              FFTW_BACKWARD, FFTW_ESTIMATE); 
+    ifft_plan = fftw_plan_dft_3d(Nvx, Nvy, Nvz,
+            reinterpret_cast<fftw_complex*>(data_hat),
+            reinterpret_cast<fftw_complex*>(data),
+            FFTW_BACKWARD, FFTW_ESTIMATE);
 
     // Export wisdom immediately after plan creation using the specified filename
     fftw_export_wisdom_to_filename(wisdom_fname.c_str());
@@ -112,19 +85,12 @@ void BoltzmannOperator<FFTW_Backend>::precomputeTransformWeights() {
     int N_spherical = spherical_quadrature->getNumberOfPoints(); // Number of spherical quadrature points
     int batch_size = N_gl * N_spherical; // Total number of grid_size batches
 
-    // Allocate space for the transform weights
-    // Note: alpha2 = conj(alpha1) so we don't store it
-    alpha1 = (std::complex<double>*)fftw_malloc(batch_size * grid_size * sizeof(std::complex<double>)); 
-    beta1 = (double*)fftw_malloc(N_gl * grid_size * sizeof(double));
-    beta2 = (double*)fftw_malloc(grid_size * sizeof(double));
-
     // Extract the quadrature weights and nodes (using shallow copies)
-    // Make sure no copies are performed here...
-    std::vector<double> gl_wts = gl_quadrature->getWeights();
-    std::vector<double> gl_nodes = gl_quadrature->getNodes();
-    std::vector<double> sx = spherical_quadrature->getx();
-    std::vector<double> sy = spherical_quadrature->gety();
-    std::vector<double> sz = spherical_quadrature->getz();
+    const std::vector<double>& gl_wts = gl_quadrature->getWeights();
+    const std::vector<double>& gl_nodes = gl_quadrature->getNodes();
+    const std::vector<double>& sx = spherical_quadrature->getx();
+    const std::vector<double>& sy = spherical_quadrature->gety();
+    const std::vector<double>& sz = spherical_quadrature->getz();
 
     if (lx.empty() || ly.empty() || lz.empty()) {
         throw std::runtime_error("lx, ly, or lz is not initialized");
@@ -198,16 +164,15 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
     int N_gl = gl_quadrature->getNumberOfPoints();
     int N_spherical = spherical_quadrature->getNumberOfPoints();    
 
-    std::vector<double> gl_wts = gl_quadrature->getWeights();
-    std::vector<double> gl_nodes = gl_quadrature->getNodes();
-    std::vector<double> spherical_wts = spherical_quadrature->getWeights();
+    const std::vector<double>& gl_wts = gl_quadrature->getWeights();
+    const std::vector<double>& gl_nodes = gl_quadrature->getNodes();
+    const std::vector<double>& spherical_wts = spherical_quadrature->getWeights();
 
     int grid_size = Nvx * Nvy * Nvz; // Total number of velocity grid points
     int batch_size = N_gl * N_spherical; // Total number of grid_size batches
     double fft_scale = 1.0 / grid_size; // Scaling used to normalize transforms
 
     // Initialize the input as a complex array
-    // Line with f will be removed later when we switch to r2c and c2r transforms
     for (int i = 0; i < Nvx; ++i){
         for (int j = 0; j < Nvy; ++j){
             for (int k = 0; k < Nvz; ++k){
@@ -218,8 +183,10 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
         }
     }
 
-    // Execute FFT(f)
-    fftw_execute(fft_f);
+    // Compute f_hat = fft(f)
+    fftw_execute_dft(fft_plan, 
+                    reinterpret_cast<fftw_complex*>(f), 
+                    reinterpret_cast<fftw_complex*>(f_hat));
 
     // Compute alpha1_times_f_hat and alpha2_times_f_hat
     for (int r = 0; r < N_gl; ++r){
@@ -237,11 +204,19 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
         }
     }
 
-    // Compute batched iFFTs of alpha1_times_f_hat, alpha2_times_f_hat in parallel
-    fftw_execute(ifft_alpha1_times_f_hat);
-    fftw_execute(ifft_alpha2_times_f_hat);
+    // Compute alpha1_times_f = ifft(alpha1_times_f_hat) and 
+    // alpha2_times_f = ifft(alpha2_times_f_hat)
+    for(int b = 0; b < batch_size; ++b){
+        fftw_execute_dft(ifft_plan, 
+                        reinterpret_cast<fftw_complex*>(alpha1_times_f_hat + b * grid_size), 
+                        reinterpret_cast<fftw_complex*>(alpha1_times_f + b * grid_size));
+
+        fftw_execute_dft(ifft_plan, 
+                        reinterpret_cast<fftw_complex*>(alpha2_times_f_hat + b * grid_size), 
+                        reinterpret_cast<fftw_complex*>(alpha2_times_f + b * grid_size));
+    }
  
-    // Compute the product of the transforms in the physical domain
+    // Compute transform_prod = alpha1_times_f * alpha2_times_f
     for (int r = 0; r < N_gl; ++r){
         for (int s = 0; s < N_spherical; ++s){
             for (int i = 0; i < Nvx; ++i){
@@ -255,10 +230,14 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
         }
     }
 
-    // Apply a batched FFT to the product
-    fftw_execute(fft_product);
+    // Compute transform_prod_hat = fft(transform_prod)
+    for(int b = 0; b < batch_size; ++b){
+        fftw_execute_dft(fft_plan, 
+                        reinterpret_cast<fftw_complex*>(transform_prod + b * grid_size), 
+                        reinterpret_cast<fftw_complex*>(transform_prod_hat + b * grid_size));
+    }
 
-    // Compute the gain term in the frequency domain
+    // Compute Q_gain_hat
     for (int r = 0; r < N_gl; ++r){
         for (int s = 0; s < N_spherical; ++s){
             for (int i = 0; i < Nvx; ++i){
@@ -274,7 +253,7 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
         }
     }
 
-    // Apply weights beta2 to f_hat and normalize
+    // Compute beta2_times_f_hat = beta2 * f_hat
     for (int i = 0; i < Nvx; ++i){
         for (int j = 0; j < Nvy; ++j){
             for (int k = 0; k < Nvz; ++k){
@@ -284,11 +263,15 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
         }
     }
 
-    // Transform Q_gain back to physical space
-    fftw_execute(ifft_Q_gain_hat);
+    // Compute Q_gain = ifft(Q_gain_hat)
+    fftw_execute_dft(ifft_plan, 
+                    reinterpret_cast<fftw_complex*>(Q_gain_hat), 
+                    reinterpret_cast<fftw_complex*>(Q_gain));
 
-    // Transform beta2_times_f_hat back to physical space
-    fftw_execute(ifft_beta2_times_f_hat);
+    // Compute beta2_times_f = ifft(beta2_times_f_hat)
+    fftw_execute_dft(ifft_plan, 
+        reinterpret_cast<fftw_complex*>(beta2_times_f_hat), 
+        reinterpret_cast<fftw_complex*>(beta2_times_f));
 
     // Compute Q = real(Q_gain) - real(Q_loss)
     for (int i = 0; i < Nvx; ++i){
@@ -301,7 +284,6 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
         }
     }
 
-
 }; // End of computeCollision
 
 
@@ -309,14 +291,17 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
 BoltzmannOperator<FFTW_Backend>::~BoltzmannOperator() {
 
     // Clean up FFTW plans
-    fftw_destroy_plan(fft_f);
-    fftw_destroy_plan(ifft_alpha1_times_f_hat);
-    fftw_destroy_plan(ifft_alpha2_times_f_hat);
-    fftw_destroy_plan(fft_product);
-    fftw_destroy_plan(ifft_Q_gain_hat);
-    fftw_destroy_plan(ifft_beta2_times_f_hat);
+    fftw_destroy_plan(fft_plan);
+    fftw_destroy_plan(ifft_plan);
 
     // Free allocated arrays for the transforms and weights
+    fftw_free(alpha1);
+    fftw_free(beta1);
+    fftw_free(beta2);
+
+    fftw_free(data);
+    fftw_free(data_hat);
+
     fftw_free(f);
     fftw_free(f_hat);
 
@@ -334,9 +319,5 @@ BoltzmannOperator<FFTW_Backend>::~BoltzmannOperator() {
     
     fftw_free(Q_gain_hat);
     fftw_free(Q_gain);
-
-    fftw_free(alpha1);
-    fftw_free(beta1);
-    fftw_free(beta2);
 
 }; // End of destructor
