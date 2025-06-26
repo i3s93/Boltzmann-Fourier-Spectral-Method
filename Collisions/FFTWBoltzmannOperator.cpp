@@ -172,7 +172,11 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
     int batch_size = N_gl * N_spherical; // Total number of grid_size batches
     double fft_scale = 1.0 / grid_size; // Scaling used to normalize transforms
 
+    #pragma omp parallel
+    {
+
     // Initialize the input as a complex array
+    #pragma omp for collapse(3) simd
     for (int i = 0; i < Nvx; ++i){
         for (int j = 0; j < Nvy; ++j){
             for (int k = 0; k < Nvz; ++k){
@@ -183,12 +187,21 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
         }
     }
 
+    #pragma omp barrier
+
     // Compute f_hat = fft(f)
+    #pragma omp single
     fftw_execute_dft(fft_plan, 
                     reinterpret_cast<fftw_complex*>(f), 
                     reinterpret_cast<fftw_complex*>(f_hat));
 
+    #pragma omp barrier
+
+    // Optimize? f_hat[idx3] has poor temporal locality
+    // Does f_hat fit into faster caches or can we make it so?
+    // 
     // Compute alpha1_times_f_hat and alpha2_times_f_hat
+    #pragma omp for collapse(5) simd
     for (int r = 0; r < N_gl; ++r){
         for (int s = 0; s < N_spherical; ++s){
             for (int i = 0; i < Nvx; ++i){
@@ -204,19 +217,28 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
         }
     }
 
+    #pragma omp barrier
+
     // Compute alpha1_times_f = ifft(alpha1_times_f_hat) and 
     // alpha2_times_f = ifft(alpha2_times_f_hat)
+    #pragma omp for
     for(int b = 0; b < batch_size; ++b){
         fftw_execute_dft(ifft_plan, 
                         reinterpret_cast<fftw_complex*>(alpha1_times_f_hat + b * grid_size), 
                         reinterpret_cast<fftw_complex*>(alpha1_times_f + b * grid_size));
+    }
 
+    #pragma omp for
+    for(int b = 0; b < batch_size; ++b){
         fftw_execute_dft(ifft_plan, 
                         reinterpret_cast<fftw_complex*>(alpha2_times_f_hat + b * grid_size), 
                         reinterpret_cast<fftw_complex*>(alpha2_times_f + b * grid_size));
     }
  
+    #pragma omp barrier
+
     // Compute transform_prod = alpha1_times_f * alpha2_times_f
+    #pragma omp for collapse(5) simd
     for (int r = 0; r < N_gl; ++r){
         for (int s = 0; s < N_spherical; ++s){
             for (int i = 0; i < Nvx; ++i){
@@ -230,14 +252,22 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
         }
     }
 
+    #pragma omp barrier
+
     // Compute transform_prod_hat = fft(transform_prod)
+    #pragma omp for
     for(int b = 0; b < batch_size; ++b){
         fftw_execute_dft(fft_plan, 
                         reinterpret_cast<fftw_complex*>(transform_prod + b * grid_size), 
                         reinterpret_cast<fftw_complex*>(transform_prod_hat + b * grid_size));
     }
 
+    #pragma omp barrier
+
+    // Optimize? Maybe collapse the two outer loops and use a collapse reduction on the inside?
+    //
     // Compute Q_gain_hat
+    #pragma omp for collapse(5) reduction(+:Q_gain_hat[:grid_size])
     for (int r = 0; r < N_gl; ++r){
         for (int s = 0; s < N_spherical; ++s){
             for (int i = 0; i < Nvx; ++i){
@@ -254,6 +284,7 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
     }
 
     // Compute beta2_times_f_hat = beta2 * f_hat
+    #pragma omp for collapse(3) simd
     for (int i = 0; i < Nvx; ++i){
         for (int j = 0; j < Nvy; ++j){
             for (int k = 0; k < Nvz; ++k){
@@ -263,17 +294,24 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
         }
     }
 
+    #pragma omp barrier
+
     // Compute Q_gain = ifft(Q_gain_hat)
+    #pragma omp single
     fftw_execute_dft(ifft_plan, 
                     reinterpret_cast<fftw_complex*>(Q_gain_hat), 
                     reinterpret_cast<fftw_complex*>(Q_gain));
 
     // Compute beta2_times_f = ifft(beta2_times_f_hat)
+    #pragma omp single
     fftw_execute_dft(ifft_plan, 
         reinterpret_cast<fftw_complex*>(beta2_times_f_hat), 
         reinterpret_cast<fftw_complex*>(beta2_times_f));
 
+    #pragma omp barrier
+
     // Compute Q = real(Q_gain) - real(Q_loss)
+    #pragma omp for collapse(3) simd
     for (int i = 0; i < Nvx; ++i){
         for (int j = 0; j < Nvy; ++j){
             for (int k = 0; k < Nvz; ++k){
@@ -283,6 +321,8 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
             }
         }
     }
+
+    } // End of parallel region
 
 }; // End of computeCollision
 
