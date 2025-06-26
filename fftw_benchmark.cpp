@@ -5,6 +5,7 @@
 #include <iostream>    // For input/output operations
 #include <iomanip>     // For formatting output
 #include <string>      // For string manipulation
+#include <complex>     // For std::complex
 #include <vector>      // For std::vector
 #include <cmath>       // For mathematical functions like std::sqrt, std::pow, std::exp
 #include <algorithm>   // For std::max
@@ -100,6 +101,9 @@ int main(int argc, char** argv) {
     }
 
     // Approach 1: Use FFTW with the plan many interface for batched 3D transforms
+    fftw_init_threads();
+    fftw_plan_with_nthreads(omp_get_max_threads());    
+
     int batched_rank = 3; // Each FFT is applied to a three-dimensional row-major array
     int batched_dims[] = {Nv, Nv, Nv}; // Dimensions of the arrays used in each transform
     int idist = grid_size; // Input array is separated by idist elements
@@ -121,24 +125,8 @@ int main(int argc, char** argv) {
                                     inembed, istride, idist,
                                     reinterpret_cast<fftw_complex*>(f),
                                     onembed, ostride, odist,
-                                    FFTW_FORWARD, FFTW_ESTIMATE);
+                                    FFTW_BACKWARD, FFTW_ESTIMATE);
 
-    // Approach 2: Use FFTW with the new array execute interface
-    // We use dummy 3D arrays to create plans for the forward and inverse transforms 
-    std::complex<double>* data     = (std::complex<double>*)fftw_malloc(grid_size * sizeof(std::complex<double>));
-    std::complex<double>* data_hat = (std::complex<double>*)fftw_malloc(grid_size * sizeof(std::complex<double>));
-
-    fftw_plan fft_3d_plan  = fftw_plan_dft_3d(Nv, Nv, Nv,
-                                          reinterpret_cast<fftw_complex*>(data),
-                                          reinterpret_cast<fftw_complex*>(data_hat),
-                                          FFTW_FORWARD, FFTW_ESTIMATE);
-
-    fftw_plan ifft_3d_plan = fftw_plan_dft_3d(Nv, Nv, Nv,
-                                           reinterpret_cast<fftw_complex*>(data_hat),
-                                           reinterpret_cast<fftw_complex*>(data),
-                                           FFTW_BACKWARD, FFTW_ESTIMATE);
-
-    // Approach 1: Using plan many
     std::vector<double> times_plan_many;
     times_plan_many.reserve(trials);
 
@@ -185,7 +173,25 @@ int main(int argc, char** argv) {
     print_stats_summary("Plan many", times_plan_many);
 
 
-     // Approach 2: Manual batching with the new array execute interface
+    // Approach 2: Use FFTW with the new array execute interface
+    // We use dummy 3D arrays to create plans for the forward and inverse transforms 
+    std::complex<double>* data     = (std::complex<double>*)fftw_malloc(grid_size * sizeof(std::complex<double>));
+    std::complex<double>* data_hat = (std::complex<double>*)fftw_malloc(grid_size * sizeof(std::complex<double>));
+
+    // Each FFT/iFFT will be single threaded, but will parallelize over batches
+    fftw_plan_with_nthreads(1);
+
+    fftw_plan fft_3d_plan  = fftw_plan_dft_3d(Nv, Nv, Nv,
+                                          reinterpret_cast<fftw_complex*>(data),
+                                          reinterpret_cast<fftw_complex*>(data_hat),
+                                          FFTW_FORWARD, FFTW_ESTIMATE);
+
+    fftw_plan ifft_3d_plan = fftw_plan_dft_3d(Nv, Nv, Nv,
+                                           reinterpret_cast<fftw_complex*>(data_hat),
+                                           reinterpret_cast<fftw_complex*>(data),
+                                           FFTW_BACKWARD, FFTW_ESTIMATE);
+
+
      std::vector<double> times_manual_batch;
      times_manual_batch.reserve(trials);
 
@@ -194,8 +200,10 @@ int main(int argc, char** argv) {
 
         #pragma omp parallel
         {
-            #pragma omp single
-            double start_time = omp_get_wtime();
+            double start_time, end_time;
+
+            #pragma omp master
+            start_time = omp_get_wtime();
 
             #pragma omp for
             for(int b = 0; b < batch_size; ++b){
@@ -204,9 +212,9 @@ int main(int argc, char** argv) {
                                 reinterpret_cast<fftw_complex*>(f_hat + b * grid_size));
             }
 
-            #pragma omp single
+            #pragma omp master
             {
-                double end_time = omp_get_wtime();
+                end_time = omp_get_wtime();
                 times_manual_batch.push_back(end_time - start_time);
             }
         }
@@ -227,7 +235,7 @@ int main(int argc, char** argv) {
      // Take the inverse transform and measure the error
     #pragma omp parallel for
     for(int b = 0; b < batch_size; ++b){
-        fftw_execute_dft(fft_3d_plan, 
+        fftw_execute_dft(ifft_3d_plan, 
                         reinterpret_cast<fftw_complex*>(f_hat + b * grid_size), 
                         reinterpret_cast<fftw_complex*>(f + b * grid_size));
     }
