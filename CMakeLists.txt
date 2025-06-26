@@ -40,6 +40,7 @@ option(CMAKE_CUDA_EXTENSIONS "Enable/disable extensions" OFF)
 
 # Create the executable targets for the different codes
 add_executable(maxwell_bkw_fftw_ex maxwell_bkw_fftw.cpp)
+add_executable(fftw_benchmark_ex fftw_benchmark.cpp)
 
 include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
@@ -134,8 +135,9 @@ endif()
 
 # Specify the location of the header files for the argument parser
 target_include_directories(maxwell_bkw_fftw_ex PRIVATE Include)
+target_include_directories(fftw_benchmark_ex PRIVATE Include)
 
 # Link the libraries to the code
 # Cray compilers automatically provide the link commands to fftw3 and other math libraries
 target_link_libraries(maxwell_bkw_fftw_ex PRIVATE compile-options Boltzmann OpenMP::OpenMP_C OpenMP::OpenMP_CXX)
-
+target_link_libraries(fftw_benchmark_ex PRIVATE compile-options Boltzmann OpenMP::OpenMP_C OpenMP::OpenMP_CXX)
