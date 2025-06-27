@@ -41,6 +41,7 @@ option(CMAKE_CUDA_EXTENSIONS "Enable/disable extensions" OFF)
 # Create the executable targets for the different codes
 add_executable(maxwell_bkw_fftw_ex maxwell_bkw_fftw.cpp)
 add_executable(fftw_benchmark_ex fftw_benchmark.cpp)
+add_executable(loop_benchmark_cpu_ex loop_benchmarks_cpu.cpp)
 
 include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
