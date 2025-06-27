@@ -267,7 +267,7 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
     // Optimize? Maybe collapse the two outer loops and use a collapse reduction on the inside?
     //
     // Compute Q_gain_hat
-    #pragma omp for collapse(5) reduction(+:Q_gain_hat[:grid_size])
+    #pragma omp for collapse(5) simd reduction(+:Q_gain_hat[:grid_size])
     for (int r = 0; r < N_gl; ++r){
         for (int s = 0; s < N_spherical; ++s){
             for (int i = 0; i < Nvx; ++i){
