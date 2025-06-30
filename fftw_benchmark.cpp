@@ -19,17 +19,17 @@
 
 int main(int argc, char** argv) {
 
-    int Nv, batch_size, trials;
+    int Nv, Ns, trials;
 
     try {
         // Create each of the arguments
         TCLAP::CmdLine cmd("Command description message", ' ', "1.0");
         TCLAP::ValueArg<int> Nv_Arg("", "Nv", "Number of points per dimension in velocity", false, 32, "int");
-        TCLAP::ValueArg<int> batch_Arg("", "batch_size", "Batch size for the FFTs", false, 256, "int");
+        TCLAP::ValueArg<int> Ns_Arg("", "Ns", "Number of spherical quadrature points", false, 32, "int");
         TCLAP::ValueArg<int> t_Arg("t", "trials", "Number of trials to use for statistics", false, 1, "int");
 
         cmd.add(Nv_Arg);
-        cmd.add(batch_Arg);
+        cmd.add(Ns_Arg);
         cmd.add(t_Arg);
 
         // Parse the argv array.
@@ -37,12 +37,12 @@ int main(int argc, char** argv) {
 
         // Assign parsed values to variables
         Nv = Nv_Arg.getValue();
-        batch_size = batch_Arg.getValue();
+        Ns = Ns_Arg.getValue();
         trials = t_Arg.getValue();
 
         std::cout << "\nRun arguments:" << "\n";
         std::cout << "Nv = " << Nv << "\n";
-        std::cout << "Batch size = " << batch_size << "\n";
+        std::cout << "Ns = " << Ns << "\n";
         std::cout << "trials = " << trials << "\n";
     } catch (TCLAP::ArgException &e)
     { std::cerr << "error: " << e.error() << " for arg " << e.argId() << "\n"; }
@@ -67,10 +67,11 @@ int main(int argc, char** argv) {
     const double t = 6.5;
     const double K = 1 - std::exp(-t/6);
     const int grid_size = Nv * Nv * Nv;
+    const int batch_size = Ns * Nv;
     double scale_factor = 1.0 / grid_size;
     std::complex<double>* f_bkw = (std::complex<double>*)fftw_malloc(grid_size * sizeof(std::complex<double>));
     
-    #pragma omp parallel for collapse (3)
+    #pragma omp parallel for simd collapse(3)
     for (int i = 0; i < Nv; ++i){
         for (int j = 0; j < Nv; ++j){
             for (int k = 0; k < Nv; ++k){
@@ -87,7 +88,7 @@ int main(int argc, char** argv) {
     std::complex<double>* f_hat = (std::complex<double>*)fftw_malloc(batch_size * grid_size * sizeof(std::complex<double>));
     
     // Fill the batch with the same distribution function
-    #pragma omp parallel for collapse (4)
+    #pragma omp parallel for simd collapse(4)
     for (int b = 0; b < batch_size; ++b) {
         for (int i = 0; i < Nv; ++i){
             for (int j = 0; j < Nv; ++j){
@@ -137,7 +138,7 @@ int main(int argc, char** argv) {
         times_plan_many.push_back(end_time - start_time);
     }
 
-    #pragma omp parallel for collapse (4)
+    #pragma omp parallel for simd collapse(4)
     for (int b = 0; b < batch_size; ++b) {
         for (int i = 0; i < Nv; ++i){
             for (int j = 0; j < Nv; ++j){
@@ -154,7 +155,7 @@ int main(int argc, char** argv) {
 
     double L1_error_plan_many = 0.0;
 
-    #pragma omp parallel for collapse (4) reduction(+:L1_error_plan_many)
+    #pragma omp parallel for simd collapse (4) reduction(+:L1_error_plan_many)
     for (int b = 0; b < batch_size; ++b) {
         for (int i = 0; i < Nv; ++i){
             for (int j = 0; j < Nv; ++j){
@@ -220,7 +221,7 @@ int main(int argc, char** argv) {
         }
      }
  
-     #pragma omp parallel for collapse (4)
+     #pragma omp parallel for simd collapse (4)
      for (int b = 0; b < batch_size; ++b) {
          for (int i = 0; i < Nv; ++i){
              for (int j = 0; j < Nv; ++j){
@@ -242,7 +243,7 @@ int main(int argc, char** argv) {
 
     double L1_error_manual_batch = 0.0;
  
-     #pragma omp parallel for collapse (4) reduction(+:L1_error_manual_batch)
+     #pragma omp parallel for simd collapse (4) reduction(+:L1_error_manual_batch)
      for (int b = 0; b < batch_size; ++b) {
          for (int i = 0; i < Nv; ++i){
              for (int j = 0; j < Nv; ++j){

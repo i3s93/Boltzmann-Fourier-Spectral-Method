@@ -65,12 +65,12 @@ void BoltzmannOperator<FFTW_Backend>::initialize() {
     fft_plan  = fftw_plan_dft_3d(Nvx, Nvy, Nvz,
         reinterpret_cast<fftw_complex*>(data),
         reinterpret_cast<fftw_complex*>(data_hat),
-        FFTW_FORWARD, FFTW_ESTIMATE);
+        FFTW_FORWARD, FFTW_EXHAUSTIVE);
 
     ifft_plan = fftw_plan_dft_3d(Nvx, Nvy, Nvz,
             reinterpret_cast<fftw_complex*>(data_hat),
             reinterpret_cast<fftw_complex*>(data),
-            FFTW_BACKWARD, FFTW_ESTIMATE);
+            FFTW_BACKWARD, FFTW_EXHAUSTIVE);
 
     // Export wisdom immediately after plan creation using the specified filename
     fftw_export_wisdom_to_filename(wisdom_fname.c_str());
@@ -105,11 +105,12 @@ void BoltzmannOperator<FFTW_Backend>::precomputeTransformWeights() {
 
     // Compute the complex transform weights alpha1
     // Note that we do not compute alpha2 since it is the conjugate of alpha1
-    #pragma omp for collapse(5)
+    #pragma omp for collapse(4)
     for (int r = 0; r < N_gl; ++r){
         for (int s = 0; s < N_spherical; ++s){
             for (int i = 0; i < Nvx; ++i){
                 for (int j = 0; j < Nvy; ++j){
+                    #pragma omp simd
                     for (int k = 0; k < Nvz; ++k){
                         int idx5 = ((((r) * N_spherical + s) * Nvx + i) * Nvy + j) * Nvz + k;
                         double l_dot_sigma = lx[i]*sx[s] + ly[j]*sy[s] + lz[k]*sz[s];
@@ -121,10 +122,11 @@ void BoltzmannOperator<FFTW_Backend>::precomputeTransformWeights() {
     }
 
     // Compute the real transform weights beta1
-    #pragma omp for collapse(4)
+    #pragma omp for simd collapse(3)
     for (int r = 0; r < N_gl; ++r){
         for (int i = 0; i < Nvx; ++i){
             for (int j = 0; j < Nvy; ++j){
+                #pragma omp simd
                 for (int k = 0; k < Nvz; ++k){
                     int idx4 = (((r * Nvx + i) * Nvy + j) * Nvz + k);
                     double norm_l = std::sqrt(lx[i]*lx[i] + ly[j]*ly[j] + lz[k]*lz[k]);
@@ -140,15 +142,17 @@ void BoltzmannOperator<FFTW_Backend>::precomputeTransformWeights() {
         for (int j = 0; j < Nvy; ++j){
             for (int k = 0; k < Nvz; ++k){
 
-                // Initialize beta2 to zero (since we need to accumulate values)
                 int idx3 = (i * Nvy + j) * Nvz + k;
-                beta2[idx3] = 0.0;
+                double tmp = 0.0;
                 double norm_l = std::sqrt(lx[i]*lx[i] + ly[j]*ly[j] + lz[k]*lz[k]);
 
-                #pragma omp simd reduction(+:beta2[idx3])
+                #pragma omp simd reduction(+:tmp)
                 for (int r = 0; r < N_gl; ++r){
-                    beta2[idx3] += 16*pi*pi*b_gamma*gl_wts[r]*std::pow(gl_nodes[r], gamma+2)*sincc(pi*gl_nodes[r]*norm_l/L);
+                    tmp += 16*pi*pi*b_gamma*gl_wts[r]*std::pow(gl_nodes[r], gamma+2)*sincc(pi*gl_nodes[r]*norm_l/L);
                 }
+
+                beta2[idx3] = tmp;
+
             }
         }
     }
@@ -176,9 +180,10 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
     {
 
     // Initialize the input as a complex array
-    #pragma omp for collapse(3) simd
+    #pragma omp for collapse(2)
     for (int i = 0; i < Nvx; ++i){
         for (int j = 0; j < Nvy; ++j){
+            #pragma omp simd
             for (int k = 0; k < Nvz; ++k){
                 int idx3 = (i * Nvy + j) * Nvz + k;
                 f[idx3] = f_in[idx3];
@@ -197,20 +202,18 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
 
     #pragma omp barrier
 
-    // Optimize? f_hat[idx3] has poor temporal locality
-    // Does f_hat fit into faster caches or can we make it so?
-    // 
     // Compute alpha1_times_f_hat and alpha2_times_f_hat
-    #pragma omp for collapse(5) simd
+    #pragma omp for collapse(4)
     for (int r = 0; r < N_gl; ++r){
         for (int s = 0; s < N_spherical; ++s){
             for (int i = 0; i < Nvx; ++i){
                 for (int j = 0; j < Nvy; ++j){
+                    #pragma omp simd
                     for (int k = 0; k < Nvz; ++k){
                         int idx3 = (i * Nvy + j) * Nvz + k;
                         int idx5 = ((((r) * N_spherical + s) * Nvx + i) * Nvy + j) * Nvz + k;
-                        alpha1_times_f_hat[idx5] = fft_scale*alpha1[idx5]*f_hat[idx3];
-                        alpha2_times_f_hat[idx5] = fft_scale*std::conj(alpha1[idx5])*f_hat[idx3];
+                        alpha1_times_f_hat[idx5] = fft_scale * alpha1[idx5] * f_hat[idx3];
+                        alpha2_times_f_hat[idx5] = fft_scale * std::conj(alpha1[idx5]) * f_hat[idx3];
                     }
                 }
             }
@@ -238,11 +241,12 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
     #pragma omp barrier
 
     // Compute transform_prod = alpha1_times_f * alpha2_times_f
-    #pragma omp for collapse(5) simd
+    #pragma omp for collapse(4)
     for (int r = 0; r < N_gl; ++r){
         for (int s = 0; s < N_spherical; ++s){
             for (int i = 0; i < Nvx; ++i){
                 for (int j = 0; j < Nvy; ++j){
+                    #pragma omp simd
                     for (int k = 0; k < Nvz; ++k){
                         int idx5 = ((((r) * N_spherical + s) * Nvx + i) * Nvy + j) * Nvz + k;
                         transform_prod[idx5] = alpha1_times_f[idx5]*alpha2_times_f[idx5];
@@ -264,29 +268,33 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
 
     #pragma omp barrier
 
-    // Optimize? Maybe collapse the two outer loops and use a collapse reduction on the inside?
-    //
     // Compute Q_gain_hat
-    #pragma omp for collapse(5) simd reduction(+:Q_gain_hat[:grid_size])
+    #pragma omp for collapse(2) reduction(+:Q_gain_hat[:grid_size])
     for (int r = 0; r < N_gl; ++r){
         for (int s = 0; s < N_spherical; ++s){
+
+            double weight = fft_scale*gl_wts[r]*spherical_wts[s]*std::pow(gl_nodes[r], gamma+2);
+
+            #pragma omp simd collapse(3)
             for (int i = 0; i < Nvx; ++i){
                 for (int j = 0; j < Nvy; ++j){
                     for (int k = 0; k < Nvz; ++k){
                         int idx3 = (i * Nvy + j) * Nvz + k;
                         int idx4 = (((r * Nvx + i) * Nvy + j) * Nvz + k);
                         int idx5 = ((((r) * N_spherical + s) * Nvx + i) * Nvy + j) * Nvz + k;
-                        Q_gain_hat[idx3] += fft_scale*gl_wts[r]*spherical_wts[s]*std::pow(gl_nodes[r], gamma+2)*beta1[idx4]*transform_prod_hat[idx5];
+                        Q_gain_hat[idx3] += weight*beta1[idx4]*transform_prod_hat[idx5];
                     }
                 }
             }
+
         }
     }
 
     // Compute beta2_times_f_hat = beta2 * f_hat
-    #pragma omp for collapse(3) simd
+    #pragma omp for collapse(2)
     for (int i = 0; i < Nvx; ++i){
         for (int j = 0; j < Nvy; ++j){
+            #pragma omp simd
             for (int k = 0; k < Nvz; ++k){
                 int idx3 = (i * Nvy + j) * Nvz + k;
                 beta2_times_f_hat[idx3] = fft_scale*beta2[idx3]*f_hat[idx3];
@@ -311,9 +319,10 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
     #pragma omp barrier
 
     // Compute Q = real(Q_gain) - real(Q_loss)
-    #pragma omp for collapse(3) simd
+    #pragma omp for collapse(2)
     for (int i = 0; i < Nvx; ++i){
         for (int j = 0; j < Nvy; ++j){
+            #pragma omp simd
             for (int k = 0; k < Nvz; ++k){
                 int idx3 = (i * Nvy + j) * Nvz + k;
                 std::complex<double> Q_loss = beta2_times_f[idx3]*f[idx3];
@@ -321,6 +330,9 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
             }
         }
     }
+
+
+
 
     } // End of parallel region
 

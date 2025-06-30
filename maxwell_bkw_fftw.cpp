@@ -70,8 +70,6 @@ int main(int argc, char** argv) {
     std::vector<double> vy = vx;
     std::vector<double> vz = vx;
 
-    //for(auto &e:vx) std::cout << e << "\n";
-
     // Setup the BKW solution then find the corresponding collision operator Q
     const double t = 6.5;
     const double K = 1 - std::exp(-t/6);
@@ -80,9 +78,10 @@ int main(int argc, char** argv) {
     double * f_bkw = (double *)fftw_malloc(Nv*Nv*Nv*sizeof(double));
     double * Q_bkw = (double *)fftw_malloc(Nv*Nv*Nv*sizeof(double));
 
-    #pragma omp parallel for collapse (3)
+    #pragma omp parallel for collapse (2)
     for (int i = 0; i < Nv; ++i){
         for (int j = 0; j < Nv; ++j){
+            #pragma omp simd
             for (int k = 0; k < Nv; ++k){
                 int idx3 = (i * Nv + j) * Nv + k;
                 double r_sq = vx[i]*vx[i] + vy[j]*vy[j] + vz[k]*vz[k];;
@@ -146,7 +145,7 @@ int main(int argc, char** argv) {
     double err_Linf = 0;
     double abs_diff;
 
-    #pragma omp parallel for reduction(+:err_L1, err_L2, err_Linf)
+    #pragma omp parallel for simd reduction(+:err_L1, err_L2, err_Linf)
     for (int idx = 0; idx < Nv*Nv*Nv; ++idx){
         abs_diff = std::abs(Q[idx] - Q_bkw[idx]);
         err_L1 += abs_diff;

@@ -1,0 +1,51 @@
+#!/bin/bash
+
+#SBATCH --job-name=loop_benchmark # Job name
+#SBATCH --output=loop_benchmark_data.out # Standard output file
+#SBATCH --error=loop_benchmark_error.out # Standard error file
+#SBATCH --qos=regular # Quality of service (QOS) or queue
+#SBATCH --account=m4296 # Account for the allocation
+#SBATCH --nodes=1 # Number of nodes
+#SBATCH --ntasks=1 # Number of tasks
+#SBATCH --cpus-per-task=128 # Number of CPU cores per task
+#SBATCH --constraint=cpu
+#SBATCH --gpus=0 # Number of GPUs to use in this example
+#SBATCH --exclusive # Request exlusive use of the resources
+#SBATCH --time=0-02:00:00 # Maximum runtime (D-HH:MM:SS)
+#SBATCH --mail-type=END # Send email at job completion
+#SBATCH --mail-user=wsands@udel.edu # Email address for notifications
+
+# Move to the directory of the code
+cd ~/Projects/Boltzmann-Fourier-Spectral-Method
+
+# We assume the modules are properly loaded and that the code has already been built
+
+# Define the different problem sizes to use in the runs
+thread_list="1 2 4 8 16 32 64 128"
+Nv_list="32 64"
+Ns_list="12 32"
+num_trials="10"
+
+# Specify some thread bindings to be used by OpenMP
+export OMP_PLACES=cores
+export OMP_PROC_BIND=close
+export OMP_DISPLAY_AFFINITY=false
+
+for Ns in $Ns_list
+do
+    for Nv in $Nv_list
+    do
+        for num_threads in $thread_list
+	    do
+        export OMP_NUM_THREADS=$num_threads
+        echo "Nv=$Nv Ns=$Ns Threads=$OMP_NUM_THREADS"
+        printf "\n"
+            ./Build/loop_benchmark_cpu_ex --Nv $Nv --Ns $Ns --trials $num_trials
+	    printf "\n"
+        done
+    done
+done
+
+
+
+

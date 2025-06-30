@@ -41,7 +41,7 @@ option(CMAKE_CUDA_EXTENSIONS "Enable/disable extensions" OFF)
 # Create the executable targets for the different codes
 add_executable(maxwell_bkw_fftw_ex maxwell_bkw_fftw.cpp)
 add_executable(fftw_benchmark_ex fftw_benchmark.cpp)
-add_executable(loop_benchmark_cpu_ex loop_benchmarks_cpu.cpp)
+add_executable(loop_benchmark_cpu_ex loop_benchmark_cpu.cpp)
 
 include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
@@ -102,7 +102,7 @@ endmacro()
 
 
 # standard flags for C and C++
-add_flags_if_avail("-O3")
+add_flags_if_avail("-O3" "-funroll-loops" "-ftree-vectorize" "-ffast-math")
 
 # "new" keyword doesn't exist in C so no need to check
 add_cxx_flag_if_avail("-faligned-new")
@@ -137,8 +137,21 @@ endif()
 # Specify the location of the header files for the argument parser
 target_include_directories(maxwell_bkw_fftw_ex PRIVATE Include)
 target_include_directories(fftw_benchmark_ex PRIVATE Include)
+target_include_directories(loop_benchmark_cpu_ex PRIVATE Include)
 
 # Link the libraries to the code
 # Cray compilers automatically provide the link commands to fftw3 and other math libraries
-target_link_libraries(maxwell_bkw_fftw_ex PRIVATE compile-options Boltzmann OpenMP::OpenMP_C OpenMP::OpenMP_CXX)
-target_link_libraries(fftw_benchmark_ex PRIVATE compile-options Boltzmann OpenMP::OpenMP_C OpenMP::OpenMP_CXX)
+target_link_libraries(Boltzmann PUBLIC compile-options OpenMP::OpenMP_C OpenMP::OpenMP_CXX)
+
+target_link_libraries(maxwell_bkw_fftw_ex PRIVATE Boltzmann)
+target_link_libraries(fftw_benchmark_ex PRIVATE Boltzmann)
+target_link_libraries(loop_benchmark_cpu_ex PRIVATE Boltzmann)
+
+
+
+
+
+
+
+
+

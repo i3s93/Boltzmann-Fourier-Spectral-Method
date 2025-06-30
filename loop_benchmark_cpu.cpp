@@ -10,7 +10,15 @@
 
 #include <tclap/CmdLine.h>  
 #include <omp.h>           
-#include <fftw3.h>          
+#include <fftw3.h>
+
+// Custom reduction for complex types since OpenMP does not provide this
+#pragma omp declare	\
+reduction(	\
+	+ : \
+	std::complex<double> :	\
+	omp_out += omp_in )	\
+initializer( omp_priv = omp_orig )        
 
 int main(int argc, char** argv) {
 
@@ -61,7 +69,7 @@ int main(int argc, char** argv) {
     std::vector<double> spherical_wts(Ns);
     
     const double gamma = 0.0;
-    const double b_gamma = 1/(4*pi);
+    const double b_gamma = 1/(4*3.1415962);
     const double fft_scale = 1 / grid_size;
     double start_time = 0.0;
     double end_time = 0.0;
@@ -74,7 +82,7 @@ int main(int argc, char** argv) {
     #pragma omp parallel
     {
 
-    #pragma omp for
+    #pragma omp for simd
     for (int idx = 0; idx < batch_size * grid_size; ++idx) {
         alpha1[idx] = std::complex<double>(0.75*idx, 0.25*idx);
         alpha1_times_f_hat[idx] = std::complex<double>(0.5*idx, 0.5*idx);
@@ -82,25 +90,25 @@ int main(int argc, char** argv) {
         transform_prod_hat[idx] = std::complex<double>(0.1*idx, 0.9*idx);
     }
 
-    #pragma omp for
+    #pragma omp for simd
     for (int idx = 0; idx < Nv * grid_size; ++idx) {
         beta1[idx] = 0.5*idx;
     }
 
-    #pragma omp for
+    #pragma omp for simd
     for (int idx = 0; idx < grid_size; ++idx) {
         beta2[idx] = 0.75*idx;
         f_hat[idx] = std::complex<double>(0.5*idx, 0.5*idx);
         Q_gain_hat[idx] = 0.0;
     }
 
-    #pragma omp for
+    #pragma omp for simd
     for (int idx = 0; idx < Nv; ++idx) {
         gl_nodes[idx] = 0.1 * idx; // Example values
         gl_wts[idx] = 0.2 * idx;   // Example values
     }
 
-    #pragma omp for
+    #pragma omp for simd
     for (int idx = 0; idx < Ns; ++idx) {
         spherical_wts[idx] = 1.0 / Ns; // If these are constant the compiler can optimize them out
     }
@@ -113,7 +121,7 @@ int main(int argc, char** argv) {
     // Pattern 1: Nested loops with OpenMP collapse and SIMD
 
     std::cout << "\nBeginning the experiments for pattern 1...\n";
-    std::cout << "Method 1: omp for collapse(5) simd...\n";
+    std::cout << "Method 1: omp for simd collapse(5)...\n";
     total_time = 0.0;
 
     for (int trial = 0; trial < trials; ++trial) {
@@ -127,7 +135,7 @@ int main(int argc, char** argv) {
             start_time = omp_get_wtime();
         }
 
-        #pragma omp for collapse(5) simd
+        #pragma omp for simd collapse(5) 
         for (int r = 0; r < Nv; ++r){
             for (int s = 0; s < Ns; ++s){
                 for (int i = 0; i < Nv; ++i){
@@ -154,7 +162,7 @@ int main(int argc, char** argv) {
 
     } // End of trials
 
-    std::cout << "\nTotal time (s): " << total_time << "\n";
+    std::cout << "Mean time (s): " << total_time / trials << "\n";
 
  
     std::cout << "Method 2: omp for collapse(4) with inner omp simd...\n";
@@ -199,8 +207,7 @@ int main(int argc, char** argv) {
 
     } // End of trials
 
-    std::cout << "\nTotal time (s): " << total_time << "\n";
-
+    std::cout << "Mean time (s): " << total_time / trials << "\n";
 
     // Pattern 2: Nested loops with reduction
 
@@ -246,9 +253,77 @@ int main(int argc, char** argv) {
 
     } // End of trials
 
-    std::cout << "\nTotal time (s): " << total_time << "\n";
+    std::cout << "Mean time (s): " << total_time / trials << "\n";
 
-    std::cout << "Method 2: omp for collapse(2) reduction(+:Q_gain_hat[:grid_size])...\n";
+    std::cout << "Method 2: loop permutations and tiling\n";
+    total_time = 0.0;
+
+    constexpr int Tr = 8;  // Tile size for r
+    constexpr int Ts = 32;  // Tile size for s
+
+    for (int trial = 0; trial < trials; ++trial) {
+
+        #pragma omp parallel
+        {
+
+        // Start the time measurement
+        #pragma omp master
+        {
+            start_time = omp_get_wtime();
+        }
+
+        #pragma omp for collapse(3)
+        for (int i = 0; i < Nv; ++i){
+            for (int j = 0; j < Nv; ++j){
+                for (int k = 0; k < Nv; ++k){
+
+                    int idx3 = (i * Nv + j) * Nv + k;
+                    std::complex<double> local_sum = 0.0;
+
+                    // Apply tiling to the (r,s) loops
+                    for (int rr = 0; rr < Nv; rr += Tr) {
+                        for (int ss = 0; ss < Ns; ss += Ts) {
+
+                            // Compute the ends of the loop bounds
+                            int r_end = std::min(rr + Tr, Nv);
+                            int s_end = std::min(ss + Ts, Ns);
+
+                            for (int r = rr; r < r_end; ++r){
+                                for (int s = ss; s < s_end; ++s){
+                            
+                                    int idx4 = (((r * Nv + i) * Nv + j) * Nv + k);
+                                    int idx5 = ((((r) * Ns + s) * Nv + i) * Nv + j) * Nv + k;
+
+                                    double weight = fft_scale * gl_wts[r] * spherical_wts[s] * std::pow(gl_nodes[r], gamma + 2);
+                                    local_sum += weight * beta1[idx4] * transform_prod_hat[idx5];
+
+                                }
+                            }
+
+                        }
+                    }
+
+                    Q_gain_hat[idx3] = local_sum;
+
+                }
+            }
+        }
+
+        // End the time measurement
+        #pragma omp master
+        {
+            end_time = omp_get_wtime();
+            total_time += (end_time - start_time);
+        }
+
+        } // End of parallel region
+
+    } // End of trials
+
+    std::cout << "Mean time (s): " << total_time / trials << "\n";
+
+    // This approach is generally not good... the use of SIMD requires a lot of stack memory...
+    std::cout << "Method 3: omp for collapse(2) reduction(+:Q_gain_hat[:grid_size])...\n";
     total_time = 0.0;
 
     for (int trial = 0; trial < trials; ++trial) {
@@ -268,9 +343,9 @@ int main(int argc, char** argv) {
 
                 double weight = fft_scale * gl_wts[r] * spherical_wts[s] * std::pow(gl_nodes[r], gamma + 2);
 
-                #pragma omp collapse(3) simd
                 for (int i = 0; i < Nv; ++i){
                     for (int j = 0; j < Nv; ++j){
+                        #pragma omp simd
                         for (int k = 0; k < Nv; ++k){
                             int idx3 = (i * Nv + j) * Nv + k;
                             int idx4 = (((r * Nv + i) * Nv + j) * Nv + k);
@@ -293,7 +368,7 @@ int main(int argc, char** argv) {
 
     } // End of trials
 
-    std::cout << "\nTotal time (s): " << total_time << "\n";
+    std::cout << "Mean time (s): " << total_time / trials << "\n";
 
     // Free allocated memory
     fftw_free(alpha1);
