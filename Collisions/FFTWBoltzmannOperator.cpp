@@ -1,12 +1,14 @@
 #include "FFTWBoltzmannOperator.hpp"
 
 // Custom reduction for complex types since OpenMP does not provide this
+/* This uses a custom reducer... not supported by NVIDIA OpenMP compilers
 #pragma omp declare	\
 reduction(	\
 	+ : \
 	std::complex<double> :	\
 	omp_out += omp_in )	\
 initializer( omp_priv = omp_orig )
+*/
 
 // Initialize plans and arrays for the FFTW backend
 void BoltzmannOperator<FFTW_Backend>::initialize() {
@@ -80,10 +82,9 @@ void BoltzmannOperator<FFTW_Backend>::initialize() {
 // Precompute the transform weights alpha1, beta1, beta2
 void BoltzmannOperator<FFTW_Backend>::precomputeTransformWeights() {
 
-    int grid_size = Nvx * Nvy * Nvz; // Total number of grid points
     int N_gl = gl_quadrature->getNumberOfPoints(); // Number of Gauss-Legendre quadrature points
     int N_spherical = spherical_quadrature->getNumberOfPoints(); // Number of spherical quadrature points
-    int batch_size = N_gl * N_spherical; // Total number of grid_size batches
+    //int batch_size = N_gl * N_spherical; // Total number of grid_size batches
 
     // Extract the quadrature weights and nodes (using shallow copies)
     const std::vector<double>& gl_wts = gl_quadrature->getWeights();
@@ -172,7 +173,7 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
     const std::vector<double>& gl_nodes = gl_quadrature->getNodes();
     const std::vector<double>& spherical_wts = spherical_quadrature->getWeights();
 
-    int grid_size = Nvx * Nvy * Nvz; // Total number of velocity grid points
+    int grid_size = Nvx * Nvy * Nvz; // Total number of grid points
     int batch_size = N_gl * N_spherical; // Total number of grid_size batches
     double fft_scale = 1.0 / grid_size; // Scaling used to normalize transforms
 
@@ -269,6 +270,35 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
     #pragma omp barrier
 
     // Compute Q_gain_hat
+    #pragma omp for collapse(3)
+    for (int i = 0; i < Nvx; ++i){
+        for (int j = 0; j < Nvy; ++j){
+            for (int k = 0; k < Nvz; ++k){
+
+                int idx3 = (i * Nvy + j) * Nvz + k;
+                double sum_real = 0.0;
+                double sum_imag = 0.0;
+
+                for (int r = 0; r < N_gl; ++r){
+                    for (int s = 0; s < N_spherical; ++s){
+                   
+                        int idx4 = (((r * Nvx + i) * Nvy + j) * Nvz + k);
+                        int idx5 = ((((r) * N_spherical + s) * Nvx + i) * Nvy + j) * Nvz + k; 
+                        double weight = fft_scale*gl_wts[r]*spherical_wts[s]*std::pow(gl_nodes[r], gamma+2);
+                        sum_real += weight * beta1[idx4] * transform_prod_hat[idx5].real();
+                        sum_imag += weight * beta1[idx4] * transform_prod_hat[idx5].imag();
+                         
+                    }
+                }
+
+            Q_gain_hat[idx3] = std::complex<double>(sum_real, sum_imag);
+
+            }
+        }
+    }
+
+/* This uses a custom reducer... not supported by NVIDIA OpenMP compilers
+
     #pragma omp for collapse(2) reduction(+:Q_gain_hat[:grid_size])
     for (int r = 0; r < N_gl; ++r){
         for (int s = 0; s < N_spherical; ++s){
@@ -289,6 +319,8 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
 
         }
     }
+
+*/
 
     // Compute beta2_times_f_hat = beta2 * f_hat
     #pragma omp for collapse(2)

@@ -12,6 +12,7 @@
 #include <omp.h>           
 #include <fftw3.h>
 
+/*
 // Custom reduction for complex types since OpenMP does not provide this
 #pragma omp declare	\
 reduction(	\
@@ -19,6 +20,8 @@ reduction(	\
 	std::complex<double> :	\
 	omp_out += omp_in )	\
 initializer( omp_priv = omp_orig )        
+*/
+
 
 int main(int argc, char** argv) {
 
@@ -68,8 +71,8 @@ int main(int argc, char** argv) {
     std::vector<double> gl_wts(Nv);
     std::vector<double> spherical_wts(Ns);
     
-    const double gamma = 0.0;
-    const double b_gamma = 1/(4*3.1415962);
+    //const double gamma = 0.0;
+    //const double b_gamma = 1/(4*3.1415962);
     const double fft_scale = 1 / grid_size;
     double start_time = 0.0;
     double end_time = 0.0;
@@ -208,6 +211,10 @@ int main(int argc, char** argv) {
     } // End of trials
 
     std::cout << "Mean time (s): " << total_time / trials << "\n";
+
+
+/*
+
 
     // Pattern 2: Nested loops with reduction
 
@@ -369,6 +376,11 @@ int main(int argc, char** argv) {
     } // End of trials
 
     std::cout << "Mean time (s): " << total_time / trials << "\n";
+
+
+
+*/
+
 
     // Free allocated memory
     fftw_free(alpha1);

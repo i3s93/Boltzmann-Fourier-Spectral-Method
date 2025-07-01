@@ -9,7 +9,46 @@ project(Boltzmann_Benchmark LANGUAGES C CXX)
 find_package(OpenMP REQUIRED)
 #find_package(CUDAToolkit REQUIRED)
 
+# Get FFTW paths from environment
+if(DEFINED ENV{FFTW_INC})
+    set(FFTW_INCLUDE_DIR $ENV{FFTW_INC})
+    message(STATUS "FFTW include path: ${FFTW_INCLUDE_DIR}")
+else()
+    message(FATAL_ERROR "FFTW_INC environment variable is not set.")
+endif()
+
+if(DEFINED ENV{FFTW_DIR})
+    set(FFTW_LIBRARY_DIR $ENV{FFTW_DIR})
+    message(STATUS "FFTW library path: ${FFTW_LIBRARY_DIR}")
+else()
+    message(FATAL_ERROR "FFTW_DIR environment variable is not set.")
+endif()
+
+find_library(FFTW3_LIBRARY fftw3 HINTS ${FFTW_LIBRARY_DIR})
+find_library(FFTW3_THREADS_LIBRARY fftw3_threads HINTS ${FFTW_LIBRARY_DIR})
+
+if(NOT FFTW3_LIBRARY)
+    message(FATAL_ERROR "Could not find fftw3 in ${FFTW_LIBRARY_DIR}")
+endif()
+
+if(NOT FFTW3_THREADS_LIBRARY)
+    message(WARNING "Could not find fftw3_threads in ${FFTW_LIBRARY_DIR}")
+endif()
+
+# First create the Boltzmann library target
 add_library(Boltzmann)
+
+# Add include directory
+target_include_directories(Boltzmann PUBLIC ${FFTW_INCLUDE_DIR})
+
+# Link libraries
+target_link_libraries(Boltzmann PUBLIC ${FFTW3_LIBRARY})
+
+# Optionally add threads support if available
+if(FFTW3_THREADS_LIBRARY)
+    target_link_libraries(Boltzmann PUBLIC ${FFTW3_THREADS_LIBRARY})
+endif()
+
 add_subdirectory(Utilities)
 add_subdirectory(Quadratures)
 add_subdirectory(Collisions)
@@ -100,15 +139,22 @@ macro(ADD_FLAGS_IF_AVAIL)
     endforeach()
 endmacro()
 
+if(CMAKE_C_COMPILER_ID STREQUAL "NVIDIA" AND CMAKE_CXX_COMPILER_ID STREQUAL "NVIDIA")
+    message(STATUS "Using NVIDIA HPC compilers (C and C++)")
 
-# standard flags for C and C++
-add_flags_if_avail("-O3" "-funroll-loops" "-ftree-vectorize" "-ffast-math")
+    add_flags_if_avail("-O3" "-fast" "-mp=gpu")
 
-# "new" keyword doesn't exist in C so no need to check
-add_cxx_flag_if_avail("-faligned-new")
+else()
+    # standard flags for C and C++
+    add_flags_if_avail("-O3" "-funroll-loops" "-ftree-vectorize" "-ffast-math")
 
-# OpenMP SIMD-only (supported by GCC)
-add_flags_if_avail("-fopenmp-simd")
+    # "new" keyword doesn't exist in C so no need to check
+    add_cxx_flag_if_avail("-faligned-new")
+
+    # OpenMP SIMD-only (supported by GCC)
+    add_flags_if_avail("-fopenmp-simd")
+
+endif()
 
 # enable runtime leak detection
 if(USE_SANITIZER)
@@ -135,13 +181,16 @@ if(USE_AVX512)
 endif()
 
 # Specify the location of the header files for the argument parser
-target_include_directories(maxwell_bkw_fftw_ex PRIVATE Include)
-target_include_directories(fftw_benchmark_ex PRIVATE Include)
-target_include_directories(loop_benchmark_cpu_ex PRIVATE Include)
+target_include_directories(Boltzmann PUBLIC Include ${FFTW_INCLUDE_DIR})
+
+#target_include_directories(maxwell_bkw_fftw_ex PRIVATE Include ${FFTW_INCLUDE_DIR})
+#target_include_directories(fftw_benchmark_ex PRIVATE Include ${FFTW_INCLUDE_DIR})
+#target_include_directories(loop_benchmark_cpu_ex PRIVATE Include ${FFTW_INCLUDE_DIR})
 
 # Link the libraries to the code
 # Cray compilers automatically provide the link commands to fftw3 and other math libraries
 target_link_libraries(Boltzmann PUBLIC compile-options OpenMP::OpenMP_C OpenMP::OpenMP_CXX)
+target_link_libraries(Boltzmann PUBLIC ${FFTW3_LIBRARY})
 
 target_link_libraries(maxwell_bkw_fftw_ex PRIVATE Boltzmann)
 target_link_libraries(fftw_benchmark_ex PRIVATE Boltzmann)
