@@ -276,8 +276,7 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
             for (int k = 0; k < Nvz; ++k){
 
                 int idx3 = (i * Nvy + j) * Nvz + k;
-                double sum_real = 0.0;
-                double sum_imag = 0.0;
+                std::complex<double> sum = 0.0;
 
                 for (int r = 0; r < N_gl; ++r){
                     for (int s = 0; s < N_spherical; ++s){
@@ -285,13 +284,12 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
                         int idx4 = (((r * Nvx + i) * Nvy + j) * Nvz + k);
                         int idx5 = ((((r) * N_spherical + s) * Nvx + i) * Nvy + j) * Nvz + k; 
                         double weight = fft_scale*gl_wts[r]*spherical_wts[s]*std::pow(gl_nodes[r], gamma+2);
-                        sum_real += weight * beta1[idx4] * transform_prod_hat[idx5].real();
-                        sum_imag += weight * beta1[idx4] * transform_prod_hat[idx5].imag();
+                        sum += weight * beta1[idx4] * transform_prod_hat[idx5];
                          
                     }
                 }
 
-            Q_gain_hat[idx3] = std::complex<double>(sum_real, sum_imag);
+            Q_gain_hat[idx3] = sum;
 
             }
         }

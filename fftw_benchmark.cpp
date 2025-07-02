@@ -49,7 +49,6 @@ int main(int argc, char** argv) {
 
     // Support constants and mesh information for the spectral method
     const double S = 5;
-    const double R = 2*S;
     const double L = ((3 + std::sqrt(2))/2)*S;
 
     // Build the velocity domain as a tensor product grid

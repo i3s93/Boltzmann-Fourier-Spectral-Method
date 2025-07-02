@@ -10,20 +10,32 @@ find_package(OpenMP REQUIRED)
 #find_package(CUDAToolkit REQUIRED)
 
 # Get FFTW paths from environment
-if(DEFINED ENV{FFTW_INC})
-    set(FFTW_INCLUDE_DIR $ENV{FFTW_INC})
+if(DEFINED ENV{FFTW_ROOT})
+    set(FFTW_ROOT $ENV{FFTW_ROOT})
+    set(FFTW_INCLUDE_DIR "${FFTW_ROOT}/include")
+    set(FFTW_LIBRARY_DIR "${FFTW_ROOT}/lib")
     message(STATUS "FFTW include path: ${FFTW_INCLUDE_DIR}")
-else()
-    message(FATAL_ERROR "FFTW_INC environment variable is not set.")
-endif()
-
-if(DEFINED ENV{FFTW_DIR})
-    set(FFTW_LIBRARY_DIR $ENV{FFTW_DIR})
     message(STATUS "FFTW library path: ${FFTW_LIBRARY_DIR}")
 else()
-    message(FATAL_ERROR "FFTW_DIR environment variable is not set.")
+    message(FATAL_ERROR "FFTW_ROOT environment variable is not set.")
 endif()
 
+## Get FFTW paths from environment
+#if(DEFINED ENV{FFTW_INC})
+#    set(FFTW_INCLUDE_DIR $ENV{FFTW_INC})
+#    message(STATUS "FFTW include path: ${FFTW_INCLUDE_DIR}")
+#else()
+#    message(FATAL_ERROR "FFTW_INC environment variable is not set.")
+#endif()
+
+#if(DEFINED ENV{FFTW_DIR})
+#    set(FFTW_LIBRARY_DIR $ENV{FFTW_DIR})
+#    message(STATUS "FFTW library path: ${FFTW_LIBRARY_DIR}")
+#else()
+#    message(FATAL_ERROR "FFTW_DIR environment variable is not set.")
+#endif()
+
+# Look for FFTW using the path pointed to by the user
 find_library(FFTW3_LIBRARY fftw3 HINTS ${FFTW_LIBRARY_DIR})
 find_library(FFTW3_THREADS_LIBRARY fftw3_threads HINTS ${FFTW_LIBRARY_DIR})
 
@@ -81,6 +93,7 @@ option(CMAKE_CUDA_EXTENSIONS "Enable/disable extensions" OFF)
 add_executable(maxwell_bkw_fftw_ex maxwell_bkw_fftw.cpp)
 add_executable(fftw_benchmark_ex fftw_benchmark.cpp)
 add_executable(loop_benchmark_cpu_ex loop_benchmark_cpu.cpp)
+add_executable(loop_benchmark_gpu_ex loop_benchmark_gpu.cpp)
 
 include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
@@ -139,10 +152,10 @@ macro(ADD_FLAGS_IF_AVAIL)
     endforeach()
 endmacro()
 
-if(CMAKE_C_COMPILER_ID STREQUAL "NVIDIA" AND CMAKE_CXX_COMPILER_ID STREQUAL "NVIDIA")
+if(CMAKE_C_COMPILER_ID MATCHES "NVHPC" AND CMAKE_CXX_COMPILER_ID MATCHES "NVHPC")
     message(STATUS "Using NVIDIA HPC compilers (C and C++)")
 
-    add_flags_if_avail("-O3" "-fast" "-mp=gpu")
+    add_flags_if_avail("-O3" "-fast" "-mp=gpu" "-gpu=cc80")
 
 else()
     # standard flags for C and C++
@@ -195,7 +208,7 @@ target_link_libraries(Boltzmann PUBLIC ${FFTW3_LIBRARY})
 target_link_libraries(maxwell_bkw_fftw_ex PRIVATE Boltzmann)
 target_link_libraries(fftw_benchmark_ex PRIVATE Boltzmann)
 target_link_libraries(loop_benchmark_cpu_ex PRIVATE Boltzmann)
-
+target_link_libraries(loop_benchmark_gpu_ex PRIVATE Boltzmann)
 
 
 

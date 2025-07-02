@@ -1,8 +1,8 @@
 #!/bin/bash
 
 #SBATCH --job-name=loop_benchmark # Job name
-#SBATCH --output=loop_benchmark_data.out # Standard output file
-#SBATCH --error=loop_benchmark_error.out # Standard error file
+#SBATCH --output=loop_benchmark_cpu_data.out # Standard output file
+#SBATCH --error=loop_benchmark_cpu_error.out # Standard error file
 #SBATCH --qos=regular # Quality of service (QOS) or queue
 #SBATCH --account=m4296 # Account for the allocation
 #SBATCH --nodes=1 # Number of nodes
