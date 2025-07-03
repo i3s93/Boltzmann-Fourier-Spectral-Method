@@ -24,7 +24,7 @@ cd ~/Projects/Boltzmann-Fourier-Spectral-Method
 thread_list="1 2 4 8 16 32 64 128"
 Nv_list="32 64"
 Ns_list="12 32"
-num_trials="10"
+num_trials="20"
 
 # Specify some thread bindings to be used by OpenMP
 export OMP_PLACES=cores

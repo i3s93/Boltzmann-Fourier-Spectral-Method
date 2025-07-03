@@ -100,6 +100,7 @@ int main(int argc, char** argv) {
         }
     }
 
+/*
     // Approach 1: Use FFTW with the plan many interface for batched 3D transforms
     fftw_init_threads();
     fftw_plan_with_nthreads(omp_get_max_threads());    
@@ -172,6 +173,7 @@ int main(int argc, char** argv) {
     std::cout << "L1 error: " << L1_error_plan_many << "\n";
     print_stats_summary("Plan many", times_plan_many);
 
+*/
 
     // Approach 2: Use FFTW with the new array execute interface
     // We use dummy 3D arrays to create plans for the forward and inverse transforms 
@@ -269,9 +271,10 @@ int main(int argc, char** argv) {
     fftw_free(data);
     fftw_free(data_hat);
 
+/*
     fftw_destroy_plan(fft_batch_plan_many);
     fftw_destroy_plan(ifft_batch_plan_many);
-    
+*/  
     fftw_destroy_plan(fft_3d_plan);
     fftw_destroy_plan(ifft_3d_plan);
   
