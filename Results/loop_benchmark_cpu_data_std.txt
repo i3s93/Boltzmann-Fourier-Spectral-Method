@@ -1,0 +1,672 @@
+Nv=32 Ns=12 Threads=1
+
+
+Run arguments:
+Nv = 32
+Ns = 12
+trials = 10
+tile_size = 8
+
+Initialization complete...
+
+Beginning the experiments for pattern 1...
+Method 1: omp for simd collapse(5)...
+Mean time (s): 0.430415
+Method 2: omp for collapse(4) with inner omp simd...
+Mean time (s): 0.380313
+Method 1: loop permutations
+Mean time (s): 0.123976
+Method 2: loop permutations and tiling
+Mean time (s): 0.168073
+
+Nv=32 Ns=12 Threads=2
+
+
+Run arguments:
+Nv = 32
+Ns = 12
+trials = 10
+tile_size = 8
+
+Initialization complete...
+
+Beginning the experiments for pattern 1...
+Method 1: omp for simd collapse(5)...
+Mean time (s): 0.215023
+Method 2: omp for collapse(4) with inner omp simd...
+Mean time (s): 0.190096
+Method 1: loop permutations
+Mean time (s): 0.0622759
+Method 2: loop permutations and tiling
+Mean time (s): 0.0803517
+
+Nv=32 Ns=12 Threads=4
+
+
+Run arguments:
+Nv = 32
+Ns = 12
+trials = 10
+tile_size = 8
+
+Initialization complete...
+
+Beginning the experiments for pattern 1...
+Method 1: omp for simd collapse(5)...
+Mean time (s): 0.108482
+Method 2: omp for collapse(4) with inner omp simd...
+Mean time (s): 0.0960448
+Method 1: loop permutations
+Mean time (s): 0.0336382
+Method 2: loop permutations and tiling
+Mean time (s): 0.0453982
+
+Nv=32 Ns=12 Threads=8
+
+
+Run arguments:
+Nv = 32
+Ns = 12
+trials = 10
+tile_size = 8
+
+Initialization complete...
+
+Beginning the experiments for pattern 1...
+Method 1: omp for simd collapse(5)...
+Mean time (s): 0.0553142
+Method 2: omp for collapse(4) with inner omp simd...
+Mean time (s): 0.0495858
+Method 1: loop permutations
+Mean time (s): 0.0169526
+Method 2: loop permutations and tiling
+Mean time (s): 0.0229869
+
+Nv=32 Ns=12 Threads=16
+
+
+Run arguments:
+Nv = 32
+Ns = 12
+trials = 10
+tile_size = 8
+
+Initialization complete...
+
+Beginning the experiments for pattern 1...
+Method 1: omp for simd collapse(5)...
+Mean time (s): 0.0305458
+Method 2: omp for collapse(4) with inner omp simd...
+Mean time (s): 0.0269812
+Method 1: loop permutations
+Mean time (s): 0.0184197
+Method 2: loop permutations and tiling
+Mean time (s): 0.0192911
+
+Nv=32 Ns=12 Threads=32
+
+
+Run arguments:
+Nv = 32
+Ns = 12
+trials = 10
+tile_size = 8
+
+Initialization complete...
+
+Beginning the experiments for pattern 1...
+Method 1: omp for simd collapse(5)...
+Mean time (s): 0.0152886
+Method 2: omp for collapse(4) with inner omp simd...
+Mean time (s): 0.013455
+Method 1: loop permutations
+Mean time (s): 0.00496438
+Method 2: loop permutations and tiling
+Mean time (s): 0.00709331
+
+Nv=32 Ns=12 Threads=64
+
+
+Run arguments:
+Nv = 32
+Ns = 12
+trials = 10
+tile_size = 8
+
+Initialization complete...
+
+Beginning the experiments for pattern 1...
+Method 1: omp for simd collapse(5)...
+Mean time (s): 0.00762239
+Method 2: omp for collapse(4) with inner omp simd...
+Mean time (s): 0.0069253
+Method 1: loop permutations
+Mean time (s): 0.00299599
+Method 2: loop permutations and tiling
+Mean time (s): 0.00419657
+
+Nv=32 Ns=12 Threads=128
+
+
+Run arguments:
+Nv = 32
+Ns = 12
+trials = 10
+tile_size = 8
+
+Initialization complete...
+
+Beginning the experiments for pattern 1...
+Method 1: omp for simd collapse(5)...
+Mean time (s): 0.0038691
+Method 2: omp for collapse(4) with inner omp simd...
+Mean time (s): 0.00339694
+Method 1: loop permutations
+Mean time (s): 0.0015897
+Method 2: loop permutations and tiling
+Mean time (s): 0.00553095
+
+Nv=64 Ns=12 Threads=1
+
+
+Run arguments:
+Nv = 64
+Ns = 12
+trials = 10
+tile_size = 8
+
+Initialization complete...
+
+Beginning the experiments for pattern 1...
+Method 1: omp for simd collapse(5)...
+Mean time (s): 6.88644
+Method 2: omp for collapse(4) with inner omp simd...
+Mean time (s): 6.08045
+Method 1: loop permutations
+Mean time (s): 2.8913
+Method 2: loop permutations and tiling
+Mean time (s): 3.76874
+
+Nv=64 Ns=12 Threads=2
+
+
+Run arguments:
+Nv = 64
+Ns = 12
+trials = 10
+tile_size = 8
+
+Initialization complete...
+
+Beginning the experiments for pattern 1...
+Method 1: omp for simd collapse(5)...
+Mean time (s): 3.46784
+Method 2: omp for collapse(4) with inner omp simd...
+Mean time (s): 3.0716
+Method 1: loop permutations
+Mean time (s): 1.28823
+Method 2: loop permutations and tiling
+Mean time (s): 2.07479
+
+Nv=64 Ns=12 Threads=4
+
+
+Run arguments:
+Nv = 64
+Ns = 12
+trials = 10
+tile_size = 8
+
+Initialization complete...
+
+Beginning the experiments for pattern 1...
+Method 1: omp for simd collapse(5)...
+Mean time (s): 1.73547
+Method 2: omp for collapse(4) with inner omp simd...
+Mean time (s): 1.53526
+Method 1: loop permutations
+Mean time (s): 0.79404
+Method 2: loop permutations and tiling
+Mean time (s): 1.20163
+
+Nv=64 Ns=12 Threads=8
+
+
+Run arguments:
+Nv = 64
+Ns = 12
+trials = 10
+tile_size = 8
+
+Initialization complete...
+
+Beginning the experiments for pattern 1...
+Method 1: omp for simd collapse(5)...
+Mean time (s): 0.875173
+Method 2: omp for collapse(4) with inner omp simd...
+Mean time (s): 0.782092
+Method 1: loop permutations
+Mean time (s): 0.27652
+Method 2: loop permutations and tiling
+Mean time (s): 0.408833
+
+Nv=64 Ns=12 Threads=16
+
+
+Run arguments:
+Nv = 64
+Ns = 12
+trials = 10
+tile_size = 8
+
+Initialization complete...
+
+Beginning the experiments for pattern 1...
+Method 1: omp for simd collapse(5)...
+Mean time (s): 0.486165
+Method 2: omp for collapse(4) with inner omp simd...
+Mean time (s): 0.431028
+Method 1: loop permutations
+Mean time (s): 0.145542
+Method 2: loop permutations and tiling
+Mean time (s): 0.228362
+
+Nv=64 Ns=12 Threads=32
+
+
+Run arguments:
+Nv = 64
+Ns = 12
+trials = 10
+tile_size = 8
+
+Initialization complete...
+
+Beginning the experiments for pattern 1...
+Method 1: omp for simd collapse(5)...
+Mean time (s): 0.24308
+Method 2: omp for collapse(4) with inner omp simd...
+Mean time (s): 0.215676
+Method 1: loop permutations
+Mean time (s): 0.0758701
+Method 2: loop permutations and tiling
+Mean time (s): 0.135162
+
+Nv=64 Ns=12 Threads=64
+
+
+Run arguments:
+Nv = 64
+Ns = 12
+trials = 10
+tile_size = 8
+
+Initialization complete...
+
+Beginning the experiments for pattern 1...
+Method 1: omp for simd collapse(5)...
+Mean time (s): 0.123668
+Method 2: omp for collapse(4) with inner omp simd...
+Mean time (s): 0.112615
+Method 1: loop permutations
+Mean time (s): 0.0426133
+Method 2: loop permutations and tiling
+Mean time (s): 0.0705884
+
+Nv=64 Ns=12 Threads=128
+
+
+Run arguments:
+Nv = 64
+Ns = 12
+trials = 10
+tile_size = 8
+
+Initialization complete...
+
+Beginning the experiments for pattern 1...
+Method 1: omp for simd collapse(5)...
+Mean time (s): 0.0617183
+Method 2: omp for collapse(4) with inner omp simd...
+Mean time (s): 0.0562053
+Method 1: loop permutations
+Mean time (s): 0.022771
+Method 2: loop permutations and tiling
+Mean time (s): 0.0554049
+
+Nv=32 Ns=32 Threads=1
+
+
+Run arguments:
+Nv = 32
+Ns = 32
+trials = 10
+tile_size = 8
+
+Initialization complete...
+
+Beginning the experiments for pattern 1...
+Method 1: omp for simd collapse(5)...
+Mean time (s): 1.1472
+Method 2: omp for collapse(4) with inner omp simd...
+Mean time (s): 1.01364
+Method 1: loop permutations
+Mean time (s): 0.330469
+Method 2: loop permutations and tiling
+Mean time (s): 0.507086
+
+Nv=32 Ns=32 Threads=2
+
+
+Run arguments:
+Nv = 32
+Ns = 32
+trials = 10
+tile_size = 8
+
+Initialization complete...
+
+Beginning the experiments for pattern 1...
+Method 1: omp for simd collapse(5)...
+Mean time (s): 0.57919
+Method 2: omp for collapse(4) with inner omp simd...
+Mean time (s): 0.513292
+Method 1: loop permutations
+Mean time (s): 0.177311
+Method 2: loop permutations and tiling
+Mean time (s): 0.262959
+
+Nv=32 Ns=32 Threads=4
+
+
+Run arguments:
+Nv = 32
+Ns = 32
+trials = 10
+tile_size = 8
+
+Initialization complete...
+
+Beginning the experiments for pattern 1...
+Method 1: omp for simd collapse(5)...
+Mean time (s): 0.289357
+Method 2: omp for collapse(4) with inner omp simd...
+Mean time (s): 0.256567
+Method 1: loop permutations
+Mean time (s): 0.0925689
+Method 2: loop permutations and tiling
+Mean time (s): 0.142681
+
+Nv=32 Ns=32 Threads=8
+
+
+Run arguments:
+Nv = 32
+Ns = 32
+trials = 10
+tile_size = 8
+
+Initialization complete...
+
+Beginning the experiments for pattern 1...
+Method 1: omp for simd collapse(5)...
+Mean time (s): 0.146423
+Method 2: omp for collapse(4) with inner omp simd...
+Mean time (s): 0.12962
+Method 1: loop permutations
+Mean time (s): 0.0454539
+Method 2: loop permutations and tiling
+Mean time (s): 0.0729932
+
+Nv=32 Ns=32 Threads=16
+
+
+Run arguments:
+Nv = 32
+Ns = 32
+trials = 10
+tile_size = 8
+
+Initialization complete...
+
+Beginning the experiments for pattern 1...
+Method 1: omp for simd collapse(5)...
+Mean time (s): 0.0814307
+Method 2: omp for collapse(4) with inner omp simd...
+Mean time (s): 0.0721058
+Method 1: loop permutations
+Mean time (s): 0.0248455
+Method 2: loop permutations and tiling
+Mean time (s): 0.0412742
+
+Nv=32 Ns=32 Threads=32
+
+
+Run arguments:
+Nv = 32
+Ns = 32
+trials = 10
+tile_size = 8
+
+Initialization complete...
+
+Beginning the experiments for pattern 1...
+Method 1: omp for simd collapse(5)...
+Mean time (s): 0.0406441
+Method 2: omp for collapse(4) with inner omp simd...
+Mean time (s): 0.0359821
+Method 1: loop permutations
+Mean time (s): 0.0130967
+Method 2: loop permutations and tiling
+Mean time (s): 0.0304061
+
+Nv=32 Ns=32 Threads=64
+
+
+Run arguments:
+Nv = 32
+Ns = 32
+trials = 10
+tile_size = 8
+
+Initialization complete...
+
+Beginning the experiments for pattern 1...
+Method 1: omp for simd collapse(5)...
+Mean time (s): 0.0205064
+Method 2: omp for collapse(4) with inner omp simd...
+Mean time (s): 0.0186175
+Method 1: loop permutations
+Mean time (s): 0.00846968
+Method 2: loop permutations and tiling
+Mean time (s): 0.0134895
+
+Nv=32 Ns=32 Threads=128
+
+
+Run arguments:
+Nv = 32
+Ns = 32
+trials = 10
+tile_size = 8
+
+Initialization complete...
+
+Beginning the experiments for pattern 1...
+Method 1: omp for simd collapse(5)...
+Mean time (s): 0.0101952
+Method 2: omp for collapse(4) with inner omp simd...
+Mean time (s): 0.00928726
+Method 1: loop permutations
+Mean time (s): 0.00551507
+Method 2: loop permutations and tiling
+Mean time (s): 0.018568
+
+Nv=64 Ns=32 Threads=1
+
+
+Run arguments:
+Nv = 64
+Ns = 32
+trials = 10
+tile_size = 8
+
+Initialization complete...
+
+Beginning the experiments for pattern 1...
+Method 1: omp for simd collapse(5)...
+Mean time (s): 18.3595
+Method 2: omp for collapse(4) with inner omp simd...
+Mean time (s): 16.2032
+Method 1: loop permutations
+Mean time (s): 8.10604
+Method 2: loop permutations and tiling
+Mean time (s): 9.84051
+
+Nv=64 Ns=32 Threads=2
+
+
+Run arguments:
+Nv = 64
+Ns = 32
+trials = 10
+tile_size = 8
+
+Initialization complete...
+
+Beginning the experiments for pattern 1...
+Method 1: omp for simd collapse(5)...
+Mean time (s): 9.25463
+Method 2: omp for collapse(4) with inner omp simd...
+Mean time (s): 8.18206
+Method 1: loop permutations
+Mean time (s): 3.92189
+Method 2: loop permutations and tiling
+Mean time (s): 5.88729
+
+Nv=64 Ns=32 Threads=4
+
+
+Run arguments:
+Nv = 64
+Ns = 32
+trials = 10
+tile_size = 8
+
+Initialization complete...
+
+Beginning the experiments for pattern 1...
+Method 1: omp for simd collapse(5)...
+Mean time (s): 4.62852
+Method 2: omp for collapse(4) with inner omp simd...
+Mean time (s): 4.09364
+Method 1: loop permutations
+Mean time (s): 2.15189
+Method 2: loop permutations and tiling
+Mean time (s): 3.11949
+
+Nv=64 Ns=32 Threads=8
+
+
+Run arguments:
+Nv = 64
+Ns = 32
+trials = 10
+tile_size = 8
+
+Initialization complete...
+
+Beginning the experiments for pattern 1...
+Method 1: omp for simd collapse(5)...
+Mean time (s): 2.32951
+Method 2: omp for collapse(4) with inner omp simd...
+Mean time (s): 2.07304
+Method 1: loop permutations
+Mean time (s): 0.843655
+Method 2: loop permutations and tiling
+Mean time (s): 1.17775
+
+Nv=64 Ns=32 Threads=16
+
+
+Run arguments:
+Nv = 64
+Ns = 32
+trials = 10
+tile_size = 8
+
+Initialization complete...
+
+Beginning the experiments for pattern 1...
+Method 1: omp for simd collapse(5)...
+Mean time (s): 1.29669
+Method 2: omp for collapse(4) with inner omp simd...
+Mean time (s): 1.15021
+Method 1: loop permutations
+Mean time (s): 0.492954
+Method 2: loop permutations and tiling
+Mean time (s): 0.834217
+
+Nv=64 Ns=32 Threads=32
+
+
+Run arguments:
+Nv = 64
+Ns = 32
+trials = 10
+tile_size = 8
+
+Initialization complete...
+
+Beginning the experiments for pattern 1...
+Method 1: omp for simd collapse(5)...
+Mean time (s): 0.648547
+Method 2: omp for collapse(4) with inner omp simd...
+Mean time (s): 0.575605
+Method 1: loop permutations
+Mean time (s): 0.235998
+Method 2: loop permutations and tiling
+Mean time (s): 0.408296
+
+Nv=64 Ns=32 Threads=64
+
+
+Run arguments:
+Nv = 64
+Ns = 32
+trials = 10
+tile_size = 8
+
+Initialization complete...
+
+Beginning the experiments for pattern 1...
+Method 1: omp for simd collapse(5)...
+Mean time (s): 0.329671
+Method 2: omp for collapse(4) with inner omp simd...
+Mean time (s): 0.299945
+Method 1: loop permutations
+Mean time (s): 0.132545
+Method 2: loop permutations and tiling
+Mean time (s): 0.240678
+
+Nv=64 Ns=32 Threads=128
+
+
+Run arguments:
+Nv = 64
+Ns = 32
+trials = 10
+tile_size = 8
+
+Initialization complete...
+
+Beginning the experiments for pattern 1...
+Method 1: omp for simd collapse(5)...
+Mean time (s): 0.168917
+Method 2: omp for collapse(4) with inner omp simd...
+Mean time (s): 0.160321
+Method 1: loop permutations
+Mean time (s): 0.0888104
+Method 2: loop permutations and tiling
+Mean time (s): 0.132926
+
