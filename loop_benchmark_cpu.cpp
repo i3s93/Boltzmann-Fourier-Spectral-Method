@@ -93,9 +93,6 @@ int main(int argc, char** argv) {
     double end_time = 0.0;
     double total_time = 0.0;
 
-    // Rather than store each timing instance, we will report the total time over all trials
-    // since the goal is to minimize the total runtime of the nested loops.
-
     // Fill the arrays with some values
     #pragma omp parallel
     {
@@ -230,6 +227,7 @@ int main(int argc, char** argv) {
 
     // Pattern 2: Nested loops with reduction
 
+    std::cout << "\nBeginning the experiments for pattern 2...\n";
     std::cout << "Method 1: loop permutation\n";
     total_time = 0.0;
 
