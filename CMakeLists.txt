@@ -20,24 +20,9 @@ else()
     message(FATAL_ERROR "FFTW_ROOT environment variable is not set.")
 endif()
 
-## Get FFTW paths from environment
-#if(DEFINED ENV{FFTW_INC})
-#    set(FFTW_INCLUDE_DIR $ENV{FFTW_INC})
-#    message(STATUS "FFTW include path: ${FFTW_INCLUDE_DIR}")
-#else()
-#    message(FATAL_ERROR "FFTW_INC environment variable is not set.")
-#endif()
-
-#if(DEFINED ENV{FFTW_DIR})
-#    set(FFTW_LIBRARY_DIR $ENV{FFTW_DIR})
-#    message(STATUS "FFTW library path: ${FFTW_LIBRARY_DIR}")
-#else()
-#    message(FATAL_ERROR "FFTW_DIR environment variable is not set.")
-#endif()
-
 # Look for FFTW using the path pointed to by the user
 find_library(FFTW3_LIBRARY fftw3 HINTS ${FFTW_LIBRARY_DIR})
-find_library(FFTW3_THREADS_LIBRARY fftw3_threads HINTS ${FFTW_LIBRARY_DIR})
+find_library(FFTW3_THREADS_LIBRARY fftw3_omp HINTS ${FFTW_LIBRARY_DIR})
 
 if(NOT FFTW3_LIBRARY)
     message(FATAL_ERROR "Could not find fftw3 in ${FFTW_LIBRARY_DIR}")
@@ -54,7 +39,7 @@ add_library(Boltzmann)
 target_include_directories(Boltzmann PUBLIC ${FFTW_INCLUDE_DIR})
 
 # Link libraries
-target_link_libraries(Boltzmann PUBLIC ${FFTW3_LIBRARY})
+target_link_libraries(Boltzmann PUBLIC ${FFTW3_LIBRARY} OpenMP::OpenMP_C OpenMP::OpenMP_CXX)
 
 # Optionally add threads support if available
 if(FFTW3_THREADS_LIBRARY)
@@ -195,10 +180,6 @@ endif()
 
 # Specify the location of the header files for the argument parser
 target_include_directories(Boltzmann PUBLIC Include ${FFTW_INCLUDE_DIR})
-
-#target_include_directories(maxwell_bkw_fftw_ex PRIVATE Include ${FFTW_INCLUDE_DIR})
-#target_include_directories(fftw_benchmark_ex PRIVATE Include ${FFTW_INCLUDE_DIR})
-#target_include_directories(loop_benchmark_cpu_ex PRIVATE Include ${FFTW_INCLUDE_DIR})
 
 # Link the libraries to the code
 # Cray compilers automatically provide the link commands to fftw3 and other math libraries
