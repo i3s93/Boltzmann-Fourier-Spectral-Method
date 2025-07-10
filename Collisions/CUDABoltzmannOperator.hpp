@@ -1,17 +1,18 @@
 #ifndef CUDA_BOLTZMANN_OPERATOR_HPP
 #define CUDA_BOLTZMANN_OPERATOR_HPP
 
-#include <omp.h>
-#include <cuComplex.h>
-#include <cuda_runtime.h>
-#include <cutensornet.h>
-#include <cufft.h>
 #include <cmath>
-#include <complex>
 #include <string>
 #include <memory>
 #include <limits>
+
+#include <omp.h>
+#include <cuda_runtime.h>
+#include <cutensornet.h>
+#include <cufft.h>
+
 #include "BoltzmannOperator.hpp"
+#include "BoltzmannCUDAKernels.hpp"
 #include "AbstractCollisionOperator.hpp"
 #include "../Quadratures/GaussLegendre.hpp"
 #include "../Quadratures/SphericalDesign.hpp"
@@ -23,7 +24,6 @@ T sincc(T x){
     T eps = std::numeric_limits<T>::epsilon();
     return std::sin(x + eps)/(x + eps);
 }
-
 
 #define HANDLE_ERROR(x)                                           \
 { const auto err = x;                                             \
@@ -41,27 +41,41 @@ T sincc(T x){
   }                                                               \
 };
 
-// TO-DO: Move these to a separate header file
-using Complex = cuDoubleComplex; // Note: real(z) = z.x, imag(z) = z.y
+#define CUFFT_CALL(func)                                                      \
+    {                                                                         \
+        cufftResult status = (func);                                          \
+        if (status != CUFFT_SUCCESS) {                                        \
+            std::cerr << "cuFFT error at " << __FILE__ << ":" << __LINE__     \
+                      << " code " << status << " (" << cufftGetErrorString(status) << ")" << std::endl; \
+            std::exit(EXIT_FAILURE);                                          \
+        }                                                                     \
+    }
 
-// Declarations for the CUDA kernels
-__global__ void copy_to_complex(Complex * result, const double * input, const int N);
- 
-__global__ void compute_alpha_times_f_hat(Complex * alpha1_times_f_hat, Complex * alpha2_times_f_hat,
-                            const Complex * alpha1, const Complex * f_hat, 
-                            const int N_gl, const int N_spherical, 
-                            const int Nvx, const int Nvy, const int Nvz, const double scale);
-
-__global__ void hadamard_product(Complex * result, Complex *x, Complex *y, const int N);
-
-__global__ void compute_beta2_times_f_hat(Complex * beta2_times_f_hat,
-    const double * beta2, const Complex * f_hat, const int N, const double scale);
-
-__global__ void compute_Q_total(double * Q, Complex * Q_gain, Complex * beta2_times_f_hat,
-                            const int N, const double scale);
+std::string cufftGetErrorString(cufftResult error) {
+    switch (error) {
+        case CUFFT_SUCCESS: return "CUFFT_SUCCESS";
+        case CUFFT_INVALID_PLAN: return "CUFFT_INVALID_PLAN";
+        case CUFFT_ALLOC_FAILED: return "CUFFT_ALLOC_FAILED";
+        case CUFFT_INVALID_TYPE: return "CUFFT_INVALID_TYPE";
+        case CUFFT_INVALID_VALUE: return "CUFFT_INVALID_VALUE";
+        case CUFFT_INTERNAL_ERROR: return "CUFFT_INTERNAL_ERROR";
+        case CUFFT_EXEC_FAILED: return "CUFFT_EXEC_FAILED";
+        case CUFFT_SETUP_FAILED: return "CUFFT_SETUP_FAILED";
+        case CUFFT_INVALID_SIZE: return "CUFFT_INVALID_SIZE";
+        case CUFFT_UNALIGNED_DATA: return "CUFFT_UNALIGNED_DATA";
+        case CUFFT_INCOMPLETE_PARAMETER_LIST: return "CUFFT_INCOMPLETE_PARAMETER_LIST";
+        case CUFFT_INVALID_DEVICE: return "CUFFT_INVALID_DEVICE";
+        case CUFFT_PARSE_ERROR: return "CUFFT_PARSE_ERROR";
+        case CUFFT_NO_WORKSPACE: return "CUFFT_NO_WORKSPACE";
+        case CUFFT_NOT_IMPLEMENTED: return "CUFFT_NOT_IMPLEMENTED";
+        case CUFFT_LICENSE_ERROR: return "CUFFT_LICENSE_ERROR";
+        case CUFFT_NOT_SUPPORTED: return "CUFFT_NOT_SUPPORTED";
+        default:
+            return "Unknown CUFFT error (code = " + std::to_string(static_cast<int>(error)) + ")";
+    }
+}
 
 struct CUDA_Backend {};
-
 template <>
 class BoltzmannOperator<CUDA_Backend> : public AbstractCollisionOperator<CUDA_Backend> {
 public:
@@ -122,16 +136,11 @@ private:
 
     // Storage for the fast contraction algorithm
     cutensornetHandle_t cutensornet_handle; // Library handle for cuTensorNet
-    
     cutensornetNetworkDescriptor_t descNet; // Network descriptor for the contraction
-    
     cutensornetContractionOptimizerConfig_t optimizerConfig; // Optimizer configuration for the contraction
     cutensornetContractionOptimizerInfo_t optimizerInfo; // Optimizer info for the contraction
-    
     cutensornetWorkspaceDescriptor_t workDesc; // Workspace descriptor for the contraction
-    int64_t requiredWorkspaceSize; // Required size of the workspace needed for the contraction
     void * workspace; // Workspace (device) for the contraction operation
-
     cutensornetPlan_t contraction_plan; // Plan for the contraction operation
     cutensornetContractionAutotunePreference_t autotunePref; // Autotune preference for the contraction
 
@@ -139,12 +148,11 @@ private:
     // We shall use _h to denote arrays stored on the host (CPU)
     // Otherwise, the arrays are stored on the device (GPU)
     Complex * alpha1;
-    double * beta1;
+    Complex * beta1;
     double * beta2;
 
-    double * gl_weights;
-    double * gl_nodes;
-    double * spherical_weights;
+    Complex * radial_term;
+    Complex * spherical_wts;
 
     Complex * f;
     Complex * f_hat;

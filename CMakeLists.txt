@@ -4,10 +4,18 @@ cmake_minimum_required(VERSION 3.18)
 # Note that for CUDA codes, it is better to specify
 # CUDA as a language than use "find_package(CUDA REQUIRED)"
 # as the latter is deprecated.
-project(Boltzmann_Benchmark LANGUAGES C CXX)
+project(Boltzmann_Benchmark LANGUAGES C CXX CUDA)
 
 find_package(OpenMP REQUIRED)
-#find_package(CUDAToolkit REQUIRED)
+find_package(CUDAToolkit REQUIRED)
+
+# Create the executable targets for the different codes
+add_executable(maxwell_bkw_fftw_ex maxwell_bkw_fftw.cpp)
+add_executable(maxwell_bkw_cuda_ex maxwell_bkw_cuda.cu)
+
+add_executable(fftw_benchmark_ex fftw_benchmark.cpp)
+add_executable(loop_benchmark_cpu_ex loop_benchmark_cpu.cpp)
+add_executable(loop_benchmark_gpu_ex loop_benchmark_gpu.cpp)
 
 # Get FFTW paths from environment
 if(DEFINED ENV{FFTW_ROOT})
@@ -38,8 +46,10 @@ add_library(Boltzmann)
 # Add include directory
 target_include_directories(Boltzmann PUBLIC ${FFTW_INCLUDE_DIR})
 
-# Link libraries
-target_link_libraries(Boltzmann PUBLIC ${FFTW3_LIBRARY} OpenMP::OpenMP_C OpenMP::OpenMP_CXX)
+# Link libraries (FFTW, OpenMP, CUDA, etc.)
+target_link_libraries(Boltzmann PUBLIC ${FFTW3_LIBRARY})
+target_link_libraries(Boltzmann PUBLIC OpenMP::OpenMP_C OpenMP::OpenMP_CXX)
+target_link_libraries(Boltzmann PUBLIC CUDA::cufft CUDA::cutensornet CUDA::cutensor)
 
 # Optionally add threads support if available
 if(FFTW3_THREADS_LIBRARY)
@@ -49,11 +59,6 @@ endif()
 add_subdirectory(Utilities)
 add_subdirectory(Quadratures)
 add_subdirectory(Collisions)
-
-# This has to be set before project()
-if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
-  set(CMAKE_CUDA_ARCHITECTURES 86)
-endif()
 
 #----------------------------------------------------------------------------#
 # Options
@@ -73,12 +78,6 @@ option(CMAKE_CUDA_STANDARD_REQUIRED "Require the CUDA language standard to set" 
 option(CMAKE_C_EXTENSIONS    "Enable/disable extensions, e.g. -std=gnu11 vs. -std=c11"     OFF)
 option(CMAKE_CXX_EXTENSIONS  "Enable/disable extensions, e.g. -std=gnu++11 vs. -std=c++11" OFF)
 option(CMAKE_CUDA_EXTENSIONS "Enable/disable extensions" OFF)
-
-# Create the executable targets for the different codes
-add_executable(maxwell_bkw_fftw_ex maxwell_bkw_fftw.cpp)
-add_executable(fftw_benchmark_ex fftw_benchmark.cpp)
-add_executable(loop_benchmark_cpu_ex loop_benchmark_cpu.cpp)
-add_executable(loop_benchmark_gpu_ex loop_benchmark_gpu.cpp)
 
 include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
@@ -140,7 +139,7 @@ endmacro()
 if(CMAKE_C_COMPILER_ID MATCHES "NVHPC" AND CMAKE_CXX_COMPILER_ID MATCHES "NVHPC")
     message(STATUS "Using NVIDIA HPC compilers (C and C++)")
 
-    add_flags_if_avail("-O3" "-fast" "-mp=gpu" "-gpu=cc80")
+    add_flags_if_avail("-O3" "-fast" "-mp=gpu" "-gpu=cc80" "-cuda")
 
 else()
     # standard flags for C and C++
@@ -178,15 +177,12 @@ if(USE_AVX512)
     endif()
 endif()
 
-# Specify the location of the header files for the argument parser
-target_include_directories(Boltzmann PUBLIC Include ${FFTW_INCLUDE_DIR})
-
-# Link the libraries to the code
-# Cray compilers automatically provide the link commands to fftw3 and other math libraries
-target_link_libraries(Boltzmann PUBLIC compile-options OpenMP::OpenMP_C OpenMP::OpenMP_CXX)
-target_link_libraries(Boltzmann PUBLIC ${FFTW3_LIBRARY})
+# Pass the compile options to the Boltzmann library
+target_link_libraries(Boltzmann PUBLIC compile-options)
 
 target_link_libraries(maxwell_bkw_fftw_ex PRIVATE Boltzmann)
+target_link_libraries(maxwell_bkw_cuda_ex PRIVATE Boltzmann)
+
 target_link_libraries(fftw_benchmark_ex PRIVATE Boltzmann)
 target_link_libraries(loop_benchmark_cpu_ex PRIVATE Boltzmann)
 target_link_libraries(loop_benchmark_gpu_ex PRIVATE Boltzmann)
