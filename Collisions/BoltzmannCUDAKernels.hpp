@@ -10,8 +10,8 @@ __host__ __device__ inline Complex cuCconj(const Complex &z);
 
 // We need to define two versions of cuCexp: one for the host and one for the device
 // The device version uses CUDA intrinsics, while the host version uses the standard library
-__host__ inline Complex cuCexp(const Complex &z);
-__device__ inline Complex cuCexp(const Complex &z);
+inline Complex cuCexp_host(const Complex &z);
+__device__ inline Complex cuCexp_device(const Complex &z);
 
 __host__ __device__ inline cuDoubleComplex cuCscale(const cuDoubleComplex &z, const double scale);
 

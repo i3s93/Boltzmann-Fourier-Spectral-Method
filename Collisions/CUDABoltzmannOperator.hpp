@@ -125,8 +125,8 @@ protected:
     const std::shared_ptr<GaussLegendreQuadrature> gl_quadrature;
     const std::shared_ptr<SphericalQuadrature> spherical_quadrature;
 
-    // Fourier modes for the velocity domain
-    std::vector<int> lx, ly, lz;
+    // Fourier modes for the velocity domain store only on the host side
+    std::vector<int> lx_h, ly_h, lz_h;
 
 private:
 
@@ -141,7 +141,7 @@ private:
     cutensornetContractionOptimizerInfo_t optimizerInfo; // Optimizer info for the contraction
     cutensornetWorkspaceDescriptor_t workDesc; // Workspace descriptor for the contraction
     void * workspace; // Workspace (device) for the contraction operation
-    cutensornetPlan_t contraction_plan; // Plan for the contraction operation
+    cutensornetContractionPlan_t contraction_plan; // Plan for the contraction operation
     cutensornetContractionAutotunePreference_t autotunePref; // Autotune preference for the contraction
 
     // Device arrays used to evaluate the collision operator

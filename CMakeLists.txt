@@ -40,16 +40,44 @@ if(NOT FFTW3_THREADS_LIBRARY)
     message(WARNING "Could not find fftw3_threads in ${FFTW_LIBRARY_DIR}")
 endif()
 
+# Get the path to the cutensor library from the environment
+if(DEFINED ENV{CUTENSOR_LIBRARY_DIR})
+    set(CUTENSOR_LIBRARY_DIR $ENV{CUTENSOR_LIBRARY_DIR})
+    message(STATUS "cutensor library path: ${CUTENSOR_LIBRARY_DIR}")
+else()
+    message(FATAL_ERROR "CUTENSOR_LIBRARY_DIR environment variable is not set.")
+endif()
+
+# Get the path to cuquantum from the environment
+if(DEFINED ENV{CUQUANTUM_ROOT})
+    set(CUQUANTUM_ROOT $ENV{CUQUANTUM_ROOT})
+    set(CUQUANTUM_INCLUDE_DIR "${CUQUANTUM_ROOT}/include")
+    set(CUQUANTUM_LIBRARY_DIR "${CUQUANTUM_ROOT}/lib")
+    message(STATUS "cuquantum include path: ${CUQUANTUM_INCLUDE_DIR}")
+    message(STATUS "cuquantum library path: ${CUQUANTUM_LIBRARY_DIR}")
+else()
+    message(FATAL_ERROR "CUQUANTUM_ROOT environment variable is not set.")
+endif()
+
 # First create the Boltzmann library target
 add_library(Boltzmann)
 
 # Add include directory
+target_include_directories(Boltzmann PUBLIC Include)
 target_include_directories(Boltzmann PUBLIC ${FFTW_INCLUDE_DIR})
+target_include_directories(Boltzmann PUBLIC ${CUQUANTUM_INCLUDE_DIR})
+
+# Add the directories where the cuquantum and cutensor libraries are stored... need to generalize this
+target_link_directories(Boltzmann PUBLIC ${CUTENSOR_LIBRARY_DIR})
+target_link_directories(Boltzmann PUBLIC ${CUQUANTUM_LIBRARY_DIR})
 
 # Link libraries (FFTW, OpenMP, CUDA, etc.)
+#
+# Note... we also need to link against ${FFTW3_THREADS_LIBRARY} if we want to use threaded versions of FFTW
 target_link_libraries(Boltzmann PUBLIC ${FFTW3_LIBRARY})
 target_link_libraries(Boltzmann PUBLIC OpenMP::OpenMP_C OpenMP::OpenMP_CXX)
-target_link_libraries(Boltzmann PUBLIC CUDA::cufft CUDA::cutensornet CUDA::cutensor)
+target_link_libraries(Boltzmann PUBLIC CUDA::cufft)
+target_link_libraries(Boltzmann PUBLIC cutensor cutensornet)
 
 # Optionally add threads support if available
 if(FFTW3_THREADS_LIBRARY)
@@ -139,7 +167,7 @@ endmacro()
 if(CMAKE_C_COMPILER_ID MATCHES "NVHPC" AND CMAKE_CXX_COMPILER_ID MATCHES "NVHPC")
     message(STATUS "Using NVIDIA HPC compilers (C and C++)")
 
-    add_flags_if_avail("-O3" "-fast" "-mp=gpu" "-gpu=cc80" "-cuda")
+    add_flags_if_avail("-O3" "-fast" "-mp" "-gpu=cc80")
 
 else()
     # standard flags for C and C++

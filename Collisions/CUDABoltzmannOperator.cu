@@ -1,7 +1,7 @@
 #include "CUDABoltzmannOperator.hpp"
 
 
-// Initialize plans and arrays for the FFTW backend
+// Initialize plans and arrays for the CUDA backend
 void BoltzmannOperator<CUDA_Backend>::initialize() {
 
     int N_gl = gl_quadrature->getNumberOfPoints(); // Number of Gauss-Legendre quadrature points
@@ -40,18 +40,18 @@ void BoltzmannOperator<CUDA_Backend>::initialize() {
     HANDLE_CUDA_ERROR( cudaMalloc((void **)&spherical_wts, N_spherical * sizeof(Complex)) );
 
     // Initialize the arrays for the Fourier modes
-    lx.reserve(Nvx);
-    ly.reserve(Nvy);
-    lz.reserve(Nvz);
+    lx_h.reserve(Nvx);
+    ly_h.reserve(Nvy);
+    lz_h.reserve(Nvz);
     
-    for (int i = 0; i < Nvx / 2; ++i) lx.push_back(i);
-    for (int i = -Nvx / 2; i < 0; ++i) lx.push_back(i);
+    for (int i = 0; i < Nvx / 2; ++i) lx_h.push_back(i);
+    for (int i = -Nvx / 2; i < 0; ++i) lx_h.push_back(i);
 
-    for (int j = 0; j < Nvy / 2; ++j) ly.push_back(j);
-    for (int j = -Nvy / 2; j < 0; ++j) ly.push_back(j);
+    for (int j = 0; j < Nvy / 2; ++j) ly_h.push_back(j);
+    for (int j = -Nvy / 2; j < 0; ++j) ly_h.push_back(j);
 
-    for (int k = 0; k < Nvz / 2; ++k) lz.push_back(k);
-    for (int k = -Nvz / 2; k < 0; ++k) lz.push_back(k);
+    for (int k = 0; k < Nvz / 2; ++k) lz_h.push_back(k);
+    for (int k = -Nvz / 2; k < 0; ++k) lz_h.push_back(k);
 
     // We need to create single (3D) and batched (3D) plans for the transforms
     CUFFT_CALL( cufftPlan3d(&plan3d, Nvx, Nvy, Nvz, CUFFT_Z2Z) );
@@ -98,13 +98,13 @@ void BoltzmannOperator<CUDA_Backend>::initialize() {
     int32_t numInputs = 4;
     int32_t const numModesIn[] = {1, 1, 4, 5};
 
-    int32_t modesIn[] = {modes_radial_term.data(), modes_spherical_wts.data(), 
+    int32_t* modesIn[] = {modes_radial_term.data(), modes_spherical_wts.data(), 
         modes_beta1.data(), modes_transform_prod_hat.data()};
     
-    int64_t * extentsIn[] = {extents_radial_term.data(), extents_spherical_wts.data(), 
+    int64_t* extentsIn[] = {extents_radial_term.data(), extents_spherical_wts.data(), 
                                     extents_beta1.data(), extents_transform_prod_hat.data()};
 
-    int64_t * stridesIn[] = {strides_radial_term.data(), strides_spherical_wts.data(), 
+    int64_t* stridesIn[] = {strides_radial_term.data(), strides_spherical_wts.data(), 
                                     strides_beta1.data(), strides_transform_prod_hat.data()};
 
     int32_t numModesOut = 3;
@@ -156,7 +156,7 @@ void BoltzmannOperator<CUDA_Backend>::initialize() {
 
     // Setup the contraction plan
     HANDLE_ERROR( cutensornetCreateContractionPlan(cutensornet_handle, descNet, optimizerInfo, 
-                                                requiredWorkspaceSize, &contraction_plan) );
+                                                workDesc, &contraction_plan) );
 
     // Auto-tune cuTENSOR's cutensorContractionPlan to pick the fastest kernel for each pairwise contraction
     HANDLE_ERROR( cutensornetCreateContractionAutotunePreference(cutensornet_handle, &autotunePref) );
@@ -219,7 +219,7 @@ void BoltzmannOperator<CUDA_Backend>::precomputeTransformWeights() {
                         int idx5 = ((((r) * N_spherical + s) * Nvx + i) * Nvy + j) * Nvz + k;
                         double l_dot_sigma = lx_h[i]*sx_h[s] + ly_h[j]*sy_h[s] + lz_h[k]*sz_h[s];
                         Complex arg = make_cuDoubleComplex(0.0, -(pi / (2 * L)) * gl_nodes_h[r] * l_dot_sigma);                   
-                        alpha1_h[idx5] = cuCexp(arg);
+                        alpha1_h[idx5] = cuCexp_host(arg);
                     }
                 }
             }
@@ -254,7 +254,7 @@ void BoltzmannOperator<CUDA_Backend>::precomputeTransformWeights() {
 
                 #pragma omp simd reduction(+:tmp)
                 for (int r = 0; r < N_gl; ++r){
-                    tmp += 16*pi*pi*b_gamma*gl_wts[r]*std::pow(gl_nodes[r], gamma+2)*sincc(pi*gl_nodes[r]*norm_l/L);
+                    tmp += 16*pi*pi*b_gamma*gl_wts_h[r]*std::pow(gl_nodes_h[r], gamma+2)*sincc(pi*gl_nodes_h[r]*norm_l/L);
                 }
 
                 beta2_h[idx3] = tmp;
@@ -303,7 +303,7 @@ void BoltzmannOperator<CUDA_Backend>::computeCollision(double * Q, const double 
     copy_to_complex<<<num_blocks, num_threads_per_block>>>(f, f_in, grid_size);
 
     // Compute f_hat = fft(f)
-    CUFFT_CALL( cufftExecC2C(plan3d, 
+    CUFFT_CALL( cufftExecZ2Z(plan3d, 
                 reinterpret_cast<cufftDoubleComplex*>(f), 
                 reinterpret_cast<cufftDoubleComplex*>(f_hat),
                 CUFFT_FORWARD) );
@@ -317,12 +317,12 @@ void BoltzmannOperator<CUDA_Backend>::computeCollision(double * Q, const double 
 
     // Compute alpha1_times_f = ifft(alpha1_times_f_hat) and 
     // alpha2_times_f = ifft(alpha2_times_f_hat)
-    CUFFT_CALL( cufftExecC2C(plan3d_batched, 
+    CUFFT_CALL( cufftExecZ2Z(plan3d_batched, 
                 reinterpret_cast<cufftDoubleComplex*>(alpha1_times_f_hat), 
                 reinterpret_cast<cufftDoubleComplex*>(alpha1_times_f), 
                 CUFFT_INVERSE) );
 
-    CUFFT_CALL( cufftExecC2C(plan3d_batched,
+    CUFFT_CALL( cufftExecZ2Z(plan3d_batched,
                 reinterpret_cast<cufftDoubleComplex*>(alpha2_times_f_hat), 
                 reinterpret_cast<cufftDoubleComplex*>(alpha2_times_f), 
                 CUFFT_INVERSE) );
@@ -330,13 +330,13 @@ void BoltzmannOperator<CUDA_Backend>::computeCollision(double * Q, const double 
     // Compute transform_prod = alpha1_times_f * alpha2_times_f
     // We use half as many blocks to make each thread process roughly two elements
     num_blocks = std::max( int( (batch_size * grid_size) / (2 * num_threads_per_block) ), 1 );
-    hadamard_product<<<num_blocks, num_threads>>>(transform_prod, 
+    hadamard_product<<<num_blocks, num_threads_per_block>>>(transform_prod, 
                                         alpha1_times_f, 
                                         alpha2_times_f, 
                                         batch_size * grid_size);
 
     // Compute transform_prod_hat = fft(transform_prod)
-    CUFFT_CALL( cufftExecC2C(plan3d_batched, 
+    CUFFT_CALL( cufftExecZ2Z(plan3d_batched, 
                 reinterpret_cast<cufftDoubleComplex*>(transform_prod), 
                 reinterpret_cast<cufftDoubleComplex*>(transform_prod_hat),
                 CUFFT_FORWARD) );
@@ -345,9 +345,12 @@ void BoltzmannOperator<CUDA_Backend>::computeCollision(double * Q, const double 
     // Q_gain_hat[i,j,k] = \sum_{r,s} radial_term[r] spherical_wts[s] beta1[r,i,j,k] transform_prod_hat[r,s,i,j,k]
     HANDLE_CUDA_ERROR( cudaMemset(Q_gain_hat, 0.0, grid_size * sizeof(Complex)) ); // Initialize to zero
 
+    // The input arrays used in the contractions need to be stored in a container of type void for generality
+    const void* rawDataIn[] = {radial_term, spherical_wts, beta1, transform_prod_hat};
+
     HANDLE_ERROR( cutensornetContractSlices(cutensornet_handle,
                    contraction_plan,
-                   {radial_term, spherical_wts, beta1, transform_prod_hat}, // Array of (device) pointers to input tensors
+                   rawDataIn, // Array of (device) pointers to input tensors
                    Q_gain_hat, // Output tensor
                    1, // int32_t accumulateOutput = 1 means we accumulate the output
                    workDesc,
@@ -361,13 +364,13 @@ void BoltzmannOperator<CUDA_Backend>::computeCollision(double * Q, const double 
     // Note: The two transforms below can be run in different streams if needed (do this later...)
 
     // Compute Q_gain = ifft(Q_gain_hat)
-    CUFFT_CALL( cufftExecC2C(plan3d, 
+    CUFFT_CALL( cufftExecZ2Z(plan3d, 
                 reinterpret_cast<cufftDoubleComplex*>(Q_gain_hat), 
                 reinterpret_cast<cufftDoubleComplex*>(Q_gain),
                 CUFFT_INVERSE) );
 
     // Compute beta2_times_f = ifft(beta2_times_f_hat)
-    CUFFT_CALL( cufftExecC2C(plan3d, 
+    CUFFT_CALL( cufftExecZ2Z(plan3d, 
                 reinterpret_cast<cufftDoubleComplex*>(beta2_times_f_hat), 
                 reinterpret_cast<cufftDoubleComplex*>(beta2_times_f),
                 CUFFT_INVERSE) );

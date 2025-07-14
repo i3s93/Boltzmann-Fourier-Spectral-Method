@@ -4,14 +4,14 @@ __host__ __device__ inline Complex cuCconj(const Complex &z) {
     return make_cuDoubleComplex(z.x, -z.y);
 }
 
-__host__ inline Complex cuCexp(const Complex &z) {
+inline Complex cuCexp_host(const Complex &z) {
     double real = z.x;
     double imag = z.y;
     double exp_real = std::exp(real);
     return make_cuDoubleComplex(exp_real * std::cos(imag), exp_real * std::sin(imag));
 }
 
-__device__ inline Complex cuCexp(const Complex &z) {
+__device__ inline Complex cuCexp_device(const Complex &z) {
     double real = z.x;
     double imag = z.y;
     double exp_real = exp(real);

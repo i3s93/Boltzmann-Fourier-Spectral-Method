@@ -92,7 +92,7 @@ int main(int argc, char** argv) {
                 f_bkw_h[idx3] *= 1/(2*std::pow(2*pi*K, 1.5));
 
                 // Compute the derivative of f
-                Q_bkw_h[idx3] = (-3/(2*K) + r_sq/(2*std::pow(K,2)))*f_bkw[idx3];
+                Q_bkw_h[idx3] = (-3/(2*K) + r_sq/(2*std::pow(K,2)))*f_bkw_h[idx3];
                 Q_bkw_h[idx3] += 1/(2*std::pow(2*pi*K, 1.5))*std::exp(-r_sq/(2*K))*(3/(std::pow(K,2)) + (K-2)/(std::pow(K,3))*r_sq);
                 Q_bkw_h[idx3] *= dK;
             }
@@ -106,7 +106,7 @@ int main(int argc, char** argv) {
     // Allocate space for the output of the collision operator on the host
     // We perform the evaluation on the device and then copy the results back to the host
     // for error measurements
-    std::vector<double> = Q_h(Nv*Nv*Nv);
+    std::vector<double> Q_h(Nv*Nv*Nv);
 
     // Next, we need to allocate the device arrays for the evaluation
     double * f_bkw;

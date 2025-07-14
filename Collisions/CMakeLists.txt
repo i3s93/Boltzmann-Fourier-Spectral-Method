@@ -6,4 +6,4 @@ target_sources(Boltzmann PRIVATE
                 BoltzmannCUDAKernels.hpp
                 BoltzmannCUDAKernels.cu
                 CUDABoltzmannOperator.hpp
-                CUDABoltzmannOperator.cpp)
+                CUDABoltzmannOperator.cu)
