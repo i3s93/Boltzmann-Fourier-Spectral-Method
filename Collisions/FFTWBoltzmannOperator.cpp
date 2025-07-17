@@ -20,30 +20,30 @@ void BoltzmannOperator<FFTW_Backend>::initialize() {
 
     // Allocations for the arrays used the operator
     // Note: alpha2 = conj(alpha1) so we don't store it
-    alpha1 = (std::complex<double>*)fftw_malloc(batch_size * grid_size * sizeof(std::complex<double>)); 
-    beta1 = (double*)fftw_malloc(N_gl * grid_size * sizeof(double));
-    beta2 = (double*)fftw_malloc(grid_size * sizeof(double));
+    alpha1 = fftw_alloc_complex(batch_size * grid_size); 
+    beta1 = fftw_alloc_real(N_gl * grid_size);
+    beta2 = fftw_alloc_real(grid_size);
 
-    data = (std::complex<double>*)fftw_malloc(grid_size * sizeof(std::complex<double>));
-    data_hat = (std::complex<double>*)fftw_malloc(grid_size * sizeof(std::complex<double>));
+    data = fftw_alloc_complex(grid_size);
+    data_hat = fftw_alloc_complex(grid_size);
 
-    f = (std::complex<double>*)fftw_malloc(grid_size * sizeof(std::complex<double>));
-    f_hat = (std::complex<double>*)fftw_malloc(grid_size * sizeof(std::complex<double>));
+    f = fftw_alloc_complex(grid_size);
+    f_hat = fftw_alloc_complex(grid_size);
         
-    alpha1_times_f = (std::complex<double>*)fftw_malloc(batch_size * grid_size * sizeof(std::complex<double>));
-    alpha1_times_f_hat = (std::complex<double>*)fftw_malloc(batch_size * grid_size * sizeof(std::complex<double>));
+    alpha1_times_f = fftw_alloc_complex(batch_size * grid_size);
+    alpha1_times_f_hat = fftw_alloc_complex(batch_size * grid_size);
 
-    alpha2_times_f = (std::complex<double>*)fftw_malloc(batch_size * grid_size * sizeof(std::complex<double>));
-    alpha2_times_f_hat = (std::complex<double>*)fftw_malloc(batch_size * grid_size * sizeof(std::complex<double>));
+    alpha2_times_f = fftw_alloc_complex(batch_size * grid_size);
+    alpha2_times_f_hat = fftw_alloc_complex(batch_size * grid_size);
     
-    transform_prod = (std::complex<double>*)fftw_malloc(batch_size * grid_size * sizeof(std::complex<double>));
-    transform_prod_hat = (std::complex<double>*)fftw_malloc(batch_size * grid_size * sizeof(std::complex<double>));
+    transform_prod = fftw_alloc_complex(batch_size * grid_size);
+    transform_prod_hat = fftw_alloc_complex(batch_size * grid_size);
 
-    Q_gain = (std::complex<double>*)fftw_malloc(grid_size * sizeof(std::complex<double>));
-    Q_gain_hat = (std::complex<double>*)fftw_malloc(grid_size * sizeof(std::complex<double>));
+    Q_gain = fftw_alloc_complex(grid_size);
+    Q_gain_hat = fftw_alloc_complex(grid_size);
 
-    beta2_times_f = (std::complex<double>*)fftw_malloc(grid_size * sizeof(std::complex<double>));
-    beta2_times_f_hat = (std::complex<double>*)fftw_malloc(grid_size * sizeof(std::complex<double>));
+    beta2_times_f = fftw_alloc_complex(grid_size);
+    beta2_times_f_hat = fftw_alloc_complex(grid_size);
 
     // Initialize the arrays for the Fourier modes
     lx.reserve(Nvx);
@@ -115,7 +115,14 @@ void BoltzmannOperator<FFTW_Backend>::precomputeTransformWeights() {
                     for (int k = 0; k < Nvz; ++k){
                         int idx5 = ((((r) * N_spherical + s) * Nvx + i) * Nvy + j) * Nvz + k;
                         double l_dot_sigma = lx[i]*sx[s] + ly[j]*sy[s] + lz[k]*sz[s];
-                        alpha1[idx5] = std::exp(std::complex<double>(0,-(pi/(2*L))*gl_nodes[r]*l_dot_sigma));                   
+                        
+                        // Define tmp1 = -(pi/(2*L))*gl_nodes[r]*l_dot_sigma
+                        double tmp1;
+                        tmp1 = -(pi/(2*L)) * gl_nodes[r] * l_dot_sigma;
+                        
+                        // Compute exp(i*tmp1) = cos(tmp1) + i * sin(tmp1) 
+                        alpha1[idx5][0] = std::cos( tmp1 );
+                        alpha1[idx5][1] = std::sin( tmp1 );
                     }
                 }
             }
@@ -123,7 +130,7 @@ void BoltzmannOperator<FFTW_Backend>::precomputeTransformWeights() {
     }
 
     // Compute the real transform weights beta1
-    #pragma omp for simd collapse(3)
+    #pragma omp for collapse(3)
     for (int r = 0; r < N_gl; ++r){
         for (int i = 0; i < Nvx; ++i){
             for (int j = 0; j < Nvy; ++j){
@@ -187,8 +194,10 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
             #pragma omp simd
             for (int k = 0; k < Nvz; ++k){
                 int idx3 = (i * Nvy + j) * Nvz + k;
-                f[idx3] = f_in[idx3];
-                Q_gain_hat[idx3] = 0;
+                f[idx3][0] = f_in[idx3];
+                f[idx3][1] = 0;
+                Q_gain_hat[idx3][0] = 0;
+                Q_gain_hat[idx3][1] = 0;
             }
         }
     }
@@ -197,9 +206,7 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
 
     // Compute f_hat = fft(f)
     #pragma omp single
-    fftw_execute_dft(fft_plan, 
-                    reinterpret_cast<fftw_complex*>(f), 
-                    reinterpret_cast<fftw_complex*>(f_hat));
+    fftw_execute_dft(fft_plan, f, f_hat);
 
     #pragma omp barrier
 
@@ -213,8 +220,20 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
                     for (int k = 0; k < Nvz; ++k){
                         int idx3 = (i * Nvy + j) * Nvz + k;
                         int idx5 = ((((r) * N_spherical + s) * Nvx + i) * Nvy + j) * Nvz + k;
-                        alpha1_times_f_hat[idx5] = fft_scale * alpha1[idx5] * f_hat[idx3];
-                        alpha2_times_f_hat[idx5] = fft_scale * std::conj(alpha1[idx5]) * f_hat[idx3];
+                    
+                        double a_re = alpha1[idx5][0];
+                        double a_im = alpha1[idx5][1];
+                        double b_re = f_hat[idx3][0];
+                        double b_im = f_hat[idx3][1];
+
+                        // alpha1_times_f_hat[idx5] = fft_scale * alpha1[idx5] * f_hat[idx3];
+                        alpha1_times_f_hat[idx5][0] = fft_scale * (a_re * b_re - a_im * b_im);
+                        alpha1_times_f_hat[idx5][1] = fft_scale * (a_re * b_im + a_im * b_re);
+
+                        // alpha2_times_f_hat[idx5] = fft_scale * conj(alpha1[idx5]) * f_hat[idx3];
+                        alpha2_times_f_hat[idx5][0] = fft_scale * (a_re * b_re + a_im * b_im);
+                        alpha2_times_f_hat[idx5][1] = fft_scale * (a_re * b_im - a_im * b_re);
+
                     }
                 }
             }
@@ -227,16 +246,12 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
     // alpha2_times_f = ifft(alpha2_times_f_hat)
     #pragma omp for
     for(int b = 0; b < batch_size; ++b){
-        fftw_execute_dft(ifft_plan, 
-                        reinterpret_cast<fftw_complex*>(alpha1_times_f_hat + b * grid_size), 
-                        reinterpret_cast<fftw_complex*>(alpha1_times_f + b * grid_size));
+        fftw_execute_dft(ifft_plan, alpha1_times_f_hat + b * grid_size, alpha1_times_f + b * grid_size);
     }
 
     #pragma omp for
     for(int b = 0; b < batch_size; ++b){
-        fftw_execute_dft(ifft_plan, 
-                        reinterpret_cast<fftw_complex*>(alpha2_times_f_hat + b * grid_size), 
-                        reinterpret_cast<fftw_complex*>(alpha2_times_f + b * grid_size));
+        fftw_execute_dft(ifft_plan, alpha2_times_f_hat + b * grid_size, alpha2_times_f + b * grid_size); 
     }
  
     #pragma omp barrier
@@ -250,7 +265,12 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
                     #pragma omp simd
                     for (int k = 0; k < Nvz; ++k){
                         int idx5 = ((((r) * N_spherical + s) * Nvx + i) * Nvy + j) * Nvz + k;
-                        transform_prod[idx5] = alpha1_times_f[idx5]*alpha2_times_f[idx5];
+                        double a_re = alpha1_times_f[idx5][0];
+                        double a_im = alpha1_times_f[idx5][1];
+                        double b_re = alpha2_times_f[idx5][0];
+                        double b_im = alpha2_times_f[idx5][1];
+                        transform_prod[idx5][0] = a_re * b_re - (a_im * b_im);
+                        transform_prod[idx5][1] = a_re * b_im + (a_im * b_re);
                     }
                 }
             }
@@ -262,9 +282,7 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
     // Compute transform_prod_hat = fft(transform_prod)
     #pragma omp for
     for(int b = 0; b < batch_size; ++b){
-        fftw_execute_dft(fft_plan, 
-                        reinterpret_cast<fftw_complex*>(transform_prod + b * grid_size), 
-                        reinterpret_cast<fftw_complex*>(transform_prod_hat + b * grid_size));
+        fftw_execute_dft(fft_plan, transform_prod + b * grid_size, transform_prod_hat + b * grid_size); 
     }
 
     #pragma omp barrier
@@ -276,20 +294,21 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
             for (int k = 0; k < Nvz; ++k){
 
                 int idx3 = (i * Nvy + j) * Nvz + k;
-                std::complex<double> sum = 0.0;
+                double local_sum_re = 0;
+                double local_sum_im = 0;
 
                 for (int r = 0; r < N_gl; ++r){
                     for (int s = 0; s < N_spherical; ++s){
-                   
                         int idx4 = (((r * Nvx + i) * Nvy + j) * Nvz + k);
                         int idx5 = ((((r) * N_spherical + s) * Nvx + i) * Nvy + j) * Nvz + k; 
-                        double weight = fft_scale*gl_wts[r]*spherical_wts[s]*std::pow(gl_nodes[r], gamma+2);
-                        sum += weight * beta1[idx4] * transform_prod_hat[idx5];
-                         
+                        double weight = fft_scale * gl_wts[r] * spherical_wts[s] * std::pow(gl_nodes[r], gamma + 2);
+                        local_sum_re += weight * beta1[idx4] * transform_prod_hat[idx5][0];
+                        local_sum_im += weight * beta1[idx4] * transform_prod_hat[idx5][1];
                     }
                 }
 
-            Q_gain_hat[idx3] = sum;
+                Q_gain_hat[idx3][0] = local_sum_re;
+                Q_gain_hat[idx3][1] = local_sum_im;
 
             }
         }
@@ -327,7 +346,8 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
             #pragma omp simd
             for (int k = 0; k < Nvz; ++k){
                 int idx3 = (i * Nvy + j) * Nvz + k;
-                beta2_times_f_hat[idx3] = fft_scale*beta2[idx3]*f_hat[idx3];
+                beta2_times_f_hat[idx3][0] = fft_scale * beta2[idx3] * f_hat[idx3][0];
+                beta2_times_f_hat[idx3][1] = fft_scale * beta2[idx3] * f_hat[idx3][1];
             }
         }
     }
@@ -336,15 +356,11 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
 
     // Compute Q_gain = ifft(Q_gain_hat)
     #pragma omp single
-    fftw_execute_dft(ifft_plan, 
-                    reinterpret_cast<fftw_complex*>(Q_gain_hat), 
-                    reinterpret_cast<fftw_complex*>(Q_gain));
+    fftw_execute_dft(ifft_plan, Q_gain_hat, Q_gain); 
 
     // Compute beta2_times_f = ifft(beta2_times_f_hat)
     #pragma omp single
-    fftw_execute_dft(ifft_plan, 
-        reinterpret_cast<fftw_complex*>(beta2_times_f_hat), 
-        reinterpret_cast<fftw_complex*>(beta2_times_f));
+    fftw_execute_dft(ifft_plan, beta2_times_f_hat, beta2_times_f); 
 
     #pragma omp barrier
 
@@ -355,8 +371,14 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
             #pragma omp simd
             for (int k = 0; k < Nvz; ++k){
                 int idx3 = (i * Nvy + j) * Nvz + k;
-                std::complex<double> Q_loss = beta2_times_f[idx3]*f[idx3];
-                Q[idx3] = Q_gain[idx3].real() - Q_loss.real();
+                double a_re = beta2_times_f[idx3][0];
+                double a_im = beta2_times_f[idx3][1];
+                double b_re = f[idx3][0];
+                double b_im = f[idx3][1];
+                fftw_complex Q_loss;
+                Q_loss[0] = a_re * b_re - (a_im * b_im);
+                Q_loss[1] = a_re * b_im + (a_im * b_re);
+                Q[idx3] = Q_gain[idx3][0] - Q_loss[0];
             }
         }
     }
