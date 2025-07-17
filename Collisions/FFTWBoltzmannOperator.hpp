@@ -4,7 +4,6 @@
 #include <omp.h>
 #include <fftw3.h>
 #include <cmath>
-#include <complex>
 #include <string>
 #include <memory>
 #include <limits> // Move this to the generic header?
@@ -92,34 +91,34 @@ private:
     fftw_plan ifft_plan;
 
     // Weights needed to scale the transforms
-    std::complex<double>* alpha1;
+    fftw_complex* alpha1;
     double* beta1;
     double* beta2;
 
     // Generic arrays to create plans for the forward and inverse transforms 
-    std::complex<double>* data;
-    std::complex<double>* data_hat;
+    fftw_complex* data;
+    fftw_complex* data_hat;
 
-    std::complex<double>* f; // Storage for the input transform
-    std::complex<double>* f_hat; // FFTW array for f_hat
+    fftw_complex* f; 
+    fftw_complex* f_hat; 
+   
+    fftw_complex* alpha1_times_f;
+    fftw_complex* alpha1_times_f_hat; 
     
-    std::complex<double>* alpha1_times_f; // FFTW array for alpha1*f
-    std::complex<double>* alpha1_times_f_hat; // FFTW array for alpha1*f_hat
+    fftw_complex* alpha2_times_f; 
+    fftw_complex* alpha2_times_f_hat; 
     
-    std::complex<double>* alpha2_times_f; // FFTW array for alpha2*f
-    std::complex<double>* alpha2_times_f_hat; // FFTW array for alpha2*f_hat
+    fftw_complex* beta2_times_f;
+    fftw_complex* beta2_times_f_hat; 
     
-    std::complex<double>* beta2_times_f; // FFTW array for beta2*f
-    std::complex<double>* beta2_times_f_hat; // FFTW array for beta2*f_hat
-    
-    std::complex<double>* transform_prod; // FFTW array for the product of transforms
-    std::complex<double>* transform_prod_hat; // FFTW array for the product of transforms
+    fftw_complex* transform_prod; 
+    fftw_complex* transform_prod_hat; 
 
-    std::complex<double>* Q_gain_hat; // FFTW array for Q_gain_hat
-    std::complex<double>* Q_gain; // FFTW array for Q_gain
+    fftw_complex* Q_gain_hat;
+    fftw_complex* Q_gain; 
 
-    std::complex<double>* Q_loss_hat; // FFTW array for Q_loss_hat
-    std::complex<double>* Q_loss; // FFTW array for Q_loss
+    fftw_complex* Q_loss_hat;
+    fftw_complex* Q_loss; 
 
 };
 

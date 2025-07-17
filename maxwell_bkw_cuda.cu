@@ -13,6 +13,7 @@
 #include <tclap/CmdLine.h>  
 #include <omp.h>
 #include <cuda_runtime.h>
+#include <cutensor.h>
 
 #include "Utilities/constants.hpp"       
 #include "Utilities/statistics.hpp"      
@@ -49,6 +50,12 @@ int main(int argc, char** argv) {
         std::cout << "trials = " << trials << "\n";
     } catch (TCLAP::ArgException &e)
     { std::cerr << "error: " << e.error() << " for arg " << e.argId() << "\n"; }
+
+    // Check the versions of cuTensor and cuTensorNet for compatibility issues
+    // See: https://docs.nvidia.com/cuda/cuquantum/latest/cutensornet/release-notes.html#cutensornet-v2-8-0
+    std::cout << "cuTensor version: " << cutensorGetVersion() << "\n";
+    //std::cout << "cuTensorNet version: " << cutensornetGetVersion() << "\n";
+    //std::cout << "cuTensorNet RT version" << cutensornetGetCudartVersion() << "\n";
 
     // Test for Maxwell molecules
     const double gamma = 0;

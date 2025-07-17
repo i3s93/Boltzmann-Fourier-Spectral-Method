@@ -1,5 +1,28 @@
 #include "CUDABoltzmannOperator.hpp"
 
+std::string cufftGetErrorString(cufftResult error) {
+    switch (error) {
+        case CUFFT_SUCCESS: return "CUFFT_SUCCESS";
+        case CUFFT_INVALID_PLAN: return "CUFFT_INVALID_PLAN";
+        case CUFFT_ALLOC_FAILED: return "CUFFT_ALLOC_FAILED";
+        case CUFFT_INVALID_TYPE: return "CUFFT_INVALID_TYPE";
+        case CUFFT_INVALID_VALUE: return "CUFFT_INVALID_VALUE";
+        case CUFFT_INTERNAL_ERROR: return "CUFFT_INTERNAL_ERROR";
+        case CUFFT_EXEC_FAILED: return "CUFFT_EXEC_FAILED";
+        case CUFFT_SETUP_FAILED: return "CUFFT_SETUP_FAILED";
+        case CUFFT_INVALID_SIZE: return "CUFFT_INVALID_SIZE";
+        case CUFFT_UNALIGNED_DATA: return "CUFFT_UNALIGNED_DATA";
+        case CUFFT_INCOMPLETE_PARAMETER_LIST: return "CUFFT_INCOMPLETE_PARAMETER_LIST";
+        case CUFFT_INVALID_DEVICE: return "CUFFT_INVALID_DEVICE";
+        case CUFFT_PARSE_ERROR: return "CUFFT_PARSE_ERROR";
+        case CUFFT_NO_WORKSPACE: return "CUFFT_NO_WORKSPACE";
+        case CUFFT_NOT_IMPLEMENTED: return "CUFFT_NOT_IMPLEMENTED";
+        case CUFFT_LICENSE_ERROR: return "CUFFT_LICENSE_ERROR";
+        case CUFFT_NOT_SUPPORTED: return "CUFFT_NOT_SUPPORTED";
+        default:
+            return "Unknown CUFFT error (code = " + std::to_string(static_cast<int>(error)) + ")";
+    }
+}
 
 // Initialize plans and arrays for the CUDA backend
 void BoltzmannOperator<CUDA_Backend>::initialize() {
@@ -69,9 +92,9 @@ void BoltzmannOperator<CUDA_Backend>::initialize() {
                 inembed, istride, idist,
                 onembed, ostride, odist,
                 CUFFT_Z2Z, batch_size) );
-
+/*
     // Now we need to initialize a context to the cuTensorNet library
-    cutensornetCreate(&cutensornet_handle);
+    HANDLE_ERROR( cutensornetCreate(&cutensornet_handle) );
 
     // Next we provide descriptions of the tensors used in the contraction
     // By providing modes, extents, and strides of each tensor in the operation:
@@ -168,7 +191,7 @@ void BoltzmannOperator<CUDA_Backend>::initialize() {
                             CUTENSORNET_CONTRACTION_AUTOTUNE_MAX_ITERATIONS,
                             &numAutotuningIterations,
                             sizeof(numAutotuningIterations)) );
-
+*/
 }; // End of initialize
 
 // Precompute the transform weights alpha1, beta1, beta2
@@ -219,7 +242,7 @@ void BoltzmannOperator<CUDA_Backend>::precomputeTransformWeights() {
                         int idx5 = ((((r) * N_spherical + s) * Nvx + i) * Nvy + j) * Nvz + k;
                         double l_dot_sigma = lx_h[i]*sx_h[s] + ly_h[j]*sy_h[s] + lz_h[k]*sz_h[s];
                         Complex arg = make_cuDoubleComplex(0.0, -(pi / (2 * L)) * gl_nodes_h[r] * l_dot_sigma);                   
-                        alpha1_h[idx5] = cuCexp_host(arg);
+                        alpha1_h[idx5] = cuCexp(arg);
                     }
                 }
             }
@@ -345,6 +368,13 @@ void BoltzmannOperator<CUDA_Backend>::computeCollision(double * Q, const double 
     // Q_gain_hat[i,j,k] = \sum_{r,s} radial_term[r] spherical_wts[s] beta1[r,i,j,k] transform_prod_hat[r,s,i,j,k]
     HANDLE_CUDA_ERROR( cudaMemset(Q_gain_hat, 0.0, grid_size * sizeof(Complex)) ); // Initialize to zero
 
+    // For now, just do the contraction using atomic adds
+    num_blocks = batch_size * Nvx;
+    atomic_tensor_contraction<<<num_blocks, num_threads_per_block >>>(Q_gain_hat,
+                                        radial_term, spherical_wts, beta1, transform_prod_hat,
+                                        N_gl, N_spherical, Nvx, Nvy, Nvz, fft_scale);
+
+/*
     // The input arrays used in the contractions need to be stored in a container of type void for generality
     const void* rawDataIn[] = {radial_term, spherical_wts, beta1, transform_prod_hat};
 
@@ -356,6 +386,7 @@ void BoltzmannOperator<CUDA_Backend>::computeCollision(double * Q, const double 
                    workDesc,
                    nullptr, // nullptr means we contract over all slices instead of specifying a sliceGroup object
                    0) ); // Use the default stream
+*/
 
     // Compute beta2_times_f_hat = beta2 * f_hat
     num_blocks = std::max( int( grid_size / (2 * num_threads_per_block) ), 1 );
@@ -389,7 +420,8 @@ BoltzmannOperator<CUDA_Backend>::~BoltzmannOperator() {
     CUFFT_CALL( cufftDestroy(plan3d) );
     CUFFT_CALL( cufftDestroy(plan3d_batched) );
 
-    // Free the contraction plans and 
+    // Free the contraction plans
+/*
     HANDLE_ERROR( cutensornetDestroyWorkspaceDescriptor(workDesc) );
     HANDLE_ERROR( cutensornetDestroyContractionAutotunePreference(autotunePref) );
     HANDLE_ERROR( cutensornetDestroyContractionPlan(contraction_plan) );
@@ -397,7 +429,7 @@ BoltzmannOperator<CUDA_Backend>::~BoltzmannOperator() {
     HANDLE_ERROR( cutensornetDestroyContractionOptimizerInfo(optimizerInfo) );   
     HANDLE_ERROR( cutensornetDestroyNetworkDescriptor(descNet) );
     HANDLE_ERROR( cutensornetDestroy(cutensornet_handle) );
-
+*/
     // Free allocated arrays for the transforms and weights
     HANDLE_CUDA_ERROR( cudaFree(alpha1) );
     HANDLE_CUDA_ERROR( cudaFree(beta1) );
@@ -423,6 +455,6 @@ BoltzmannOperator<CUDA_Backend>::~BoltzmannOperator() {
 
     HANDLE_CUDA_ERROR( cudaFree(radial_term) );
     HANDLE_CUDA_ERROR( cudaFree(spherical_wts) );
-    HANDLE_CUDA_ERROR( cudaFree(workspace) );
+    //HANDLE_CUDA_ERROR( cudaFree(workspace) );
 
 }; // End of destructor

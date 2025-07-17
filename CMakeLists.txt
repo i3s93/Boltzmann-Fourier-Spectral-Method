@@ -1,5 +1,11 @@
 cmake_minimum_required(VERSION 3.18)
 
+# This has to be set before project()
+# Otherwise the wrong version of __CUDA__ARCH__ is set
+if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
+  set(CMAKE_CUDA_ARCHITECTURES 86)
+endif()
+
 # Name for the project
 # Note that for CUDA codes, it is better to specify
 # CUDA as a language than use "find_package(CUDA REQUIRED)"
@@ -40,13 +46,18 @@ if(NOT FFTW3_THREADS_LIBRARY)
     message(WARNING "Could not find fftw3_threads in ${FFTW_LIBRARY_DIR}")
 endif()
 
-# Get the path to the cutensor library from the environment
-if(DEFINED ENV{CUTENSOR_LIBRARY_DIR})
-    set(CUTENSOR_LIBRARY_DIR $ENV{CUTENSOR_LIBRARY_DIR})
-    message(STATUS "cutensor library path: ${CUTENSOR_LIBRARY_DIR}")
-else()
-    message(FATAL_ERROR "CUTENSOR_LIBRARY_DIR environment variable is not set.")
-endif()
+## Don't mess with setting environment variables... just pass them as options
+## during the invocation of cmake... (same with cuTensorNet)
+##
+## Get the path to the cutensor library from the environment
+#if((DEFINED ENV{CUTENSOR_INCLUDE_DIR}) AND (DEFINED ENV{CUTENSOR_LIBRARY_DIR}))
+#    set(CUTENSOR_INCLUDE_DIR "${CUTENSOR_INCLUDE_DIR}")
+#    set(CUTENSOR_LIBRARY_DIR "${CUTENSOR_LIBRARY_DIR}")
+#    message(STATUS "cutensor include path: ${CUTENSOR_INCLUDE_DIR}")
+#    message(STATUS "cutensor library path: ${CUTENSOR_LIBRARY_DIR}")
+#else()
+#    message(FATAL_ERROR "cuTensor environment variables are not set.")
+#endif()
 
 # Get the path to cuquantum from the environment
 if(DEFINED ENV{CUQUANTUM_ROOT})
@@ -65,9 +76,10 @@ add_library(Boltzmann)
 # Add include directory
 target_include_directories(Boltzmann PUBLIC Include)
 target_include_directories(Boltzmann PUBLIC ${FFTW_INCLUDE_DIR})
+target_include_directories(Boltzmann PUBLIC ${CUTENSOR_INCLUDE_DIR})
 target_include_directories(Boltzmann PUBLIC ${CUQUANTUM_INCLUDE_DIR})
 
-# Add the directories where the cuquantum and cutensor libraries are stored... need to generalize this
+# Add the directories where the cuquantum and cutensor libraries are stored
 target_link_directories(Boltzmann PUBLIC ${CUTENSOR_LIBRARY_DIR})
 target_link_directories(Boltzmann PUBLIC ${CUQUANTUM_LIBRARY_DIR})
 
