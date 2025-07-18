@@ -69,302 +69,6 @@ int main(int argc, char** argv) {
     double end_time = 0.0;
     double total_time = 0.0;
 
-    std::cout << "\nBenchmark with std::complex<double>...\n";
-
-    {
-
-    std::complex<double>* alpha1 = (std::complex<double>*) fftw_malloc(batch_size * grid_size * sizeof(std::complex<double>));
-    double* beta1 = (double*) fftw_malloc(Nv * grid_size * sizeof(double));
-    double* beta2 = (double*) fftw_malloc(grid_size * sizeof(double));
-
-    std::complex<double>* f_hat = (std::complex<double>*) fftw_malloc(grid_size * sizeof(std::complex<double>));
-    std::complex<double>* alpha1_times_f_hat = (std::complex<double>*) fftw_malloc(batch_size * grid_size * sizeof(std::complex<double>));
-    std::complex<double>* alpha2_times_f_hat = (std::complex<double>*) fftw_malloc(batch_size * grid_size * sizeof(std::complex<double>));
-    std::complex<double>* transform_prod_hat = (std::complex<double>*) fftw_malloc(batch_size * grid_size * sizeof(std::complex<double>));
-    std::complex<double>* Q_gain_hat = (std::complex<double>*) fftw_malloc(grid_size * sizeof(std::complex<double>));
-
-    std::vector<double> gl_nodes(Nv);
-    std::vector<double> gl_wts(Nv);
-    std::vector<double> spherical_wts(Ns);
-    
-    const double gamma = 0.0;
-    const double fft_scale = 1 / grid_size;
-    double start_time = 0.0;
-    double end_time = 0.0;
-    double total_time = 0.0;
-
-    // Fill the arrays with some values
-    #pragma omp parallel
-    {
-
-    #pragma omp for simd
-    for (int idx = 0; idx < batch_size * grid_size; ++idx) {
-        alpha1[idx] = std::complex<double>(0.75*idx, 0.25*idx);
-        alpha1_times_f_hat[idx] = std::complex<double>(0.5*idx, 0.5*idx);
-        alpha2_times_f_hat[idx] = std::complex<double>(0.25*idx, 0.75*idx);
-        transform_prod_hat[idx] = std::complex<double>(0.1*idx, 0.9*idx);
-    }
-
-    #pragma omp for simd
-    for (int idx = 0; idx < Nv * grid_size; ++idx) {
-        beta1[idx] = 0.5*idx;
-    }
-
-    #pragma omp for simd
-    for (int idx = 0; idx < grid_size; ++idx) {
-        beta2[idx] = 0.75*idx;
-        f_hat[idx] = std::complex<double>(0.5*idx, 0.5*idx);
-        Q_gain_hat[idx] = 0.0;
-    }
-
-    #pragma omp for simd
-    for (int idx = 0; idx < Nv; ++idx) {
-        gl_nodes[idx] = 0.1 * idx; // Example values
-        gl_wts[idx] = 0.2 * idx;   // Example values
-    }
-
-    #pragma omp for simd
-    for (int idx = 0; idx < Ns; ++idx) {
-        spherical_wts[idx] = 1.0 / Ns; // If these are constant the compiler can optimize them out
-    }
-
-    } // End of parallel region
-
-
-    std::cout << "\nInitialization complete...\n";
-
-    // Pattern 1: Nested loops with OpenMP collapse and SIMD
-
-    std::cout << "\nBeginning the experiments for pattern 1...\n";
-    std::cout << "Method 1: omp for simd collapse(5)...\n";
-    total_time = 0.0;
-
-    for (int trial = 0; trial < trials; ++trial) {
-
-        #pragma omp parallel
-        {
-
-        // Start the time measurement
-        #pragma omp master
-        {
-            start_time = omp_get_wtime();
-        }
-
-        #pragma omp for simd collapse(5) 
-        for (int r = 0; r < Nv; ++r){
-            for (int s = 0; s < Ns; ++s){
-                for (int i = 0; i < Nv; ++i){
-                    for (int j = 0; j < Nv; ++j){
-                        for (int k = 0; k < Nv; ++k){
-                            int idx3 = (i * Nv + j) * Nv + k;
-                            int idx5 = ((((r) * Ns + s) * Nv + i) * Nv + j) * Nv + k;
-                            alpha1_times_f_hat[idx5] = fft_scale*alpha1[idx5]*f_hat[idx3];
-                            alpha2_times_f_hat[idx5] = fft_scale*std::conj(alpha1[idx5])*f_hat[idx3];
-                        }
-                    }
-                }
-            }
-        }
-
-        // End the time measurement
-        #pragma omp master
-        {
-            end_time = omp_get_wtime();
-            total_time += (end_time - start_time);
-        }
-
-        } // End of parallel region
-
-    } // End of trials
-
-    std::cout << "Mean time (s): " << total_time / trials << "\n";
-
- 
-    std::cout << "Method 2: omp for collapse(4) with inner omp simd...\n";
-    total_time = 0.0;
-
-    for (int trial = 0; trial < trials; ++trial) {
-
-        #pragma omp parallel
-        {
-
-        // Start the time measurement
-        #pragma omp master
-        {
-            start_time = omp_get_wtime();
-        }
-
-        #pragma omp for collapse(4) 
-        for (int r = 0; r < Nv; ++r){
-            for (int s = 0; s < Ns; ++s){
-                for (int i = 0; i < Nv; ++i){
-                    for (int j = 0; j < Nv; ++j){
-                        #pragma omp simd
-                        for (int k = 0; k < Nv; ++k){
-                            int idx3 = (i * Nv + j) * Nv + k;
-                            int idx5 = ((((r) * Ns + s) * Nv + i) * Nv + j) * Nv + k;
-                            alpha1_times_f_hat[idx5] = fft_scale*alpha1[idx5]*f_hat[idx3];
-                            alpha2_times_f_hat[idx5] = fft_scale*std::conj(alpha1[idx5])*f_hat[idx3];
-                        }
-                    }
-                }
-            }
-        }
-
-        // End the time measurement
-        #pragma omp master
-        {
-            end_time = omp_get_wtime();
-            total_time += (end_time - start_time);
-        }
-
-        } // End of parallel region
-
-    } // End of trials
-
-    std::cout << "Mean time (s): " << total_time / trials << "\n";
-
-
-    // Pattern 2: Nested loops with reduction
-
-    std::cout << "\nBeginning the experiments for pattern 2...\n";
-    std::cout << "Method 1: loop permutation\n";
-    total_time = 0.0;
-
-    for (int trial = 0; trial < trials; ++trial) {
-
-        #pragma omp parallel
-        {
-
-        // Start the time measurement
-        #pragma omp master
-        {
-            start_time = omp_get_wtime();
-        }
-
-        #pragma omp for collapse(3)
-        for (int i = 0; i < Nv; ++i){
-        for (int j = 0; j < Nv; ++j){
-        for (int k = 0; k < Nv; ++k){
-
-            int idx3 = (i * Nv + j) * Nv + k;
-            std::complex<double> local_sum = 0.0;
-
-            for (int r = 0; r < Nv; ++r){
-            for (int s = 0; s < Ns; ++s){
-                            
-                int idx4 = (((r * Nv + i) * Nv + j) * Nv + k);
-                int idx5 = ((((r) * Ns + s) * Nv + i) * Nv + j) * Nv + k;
-
-                double weight = fft_scale * gl_wts[r] * spherical_wts[s] * std::pow(gl_nodes[r], gamma + 2);
-                local_sum += weight * beta1[idx4] * transform_prod_hat[idx5];
-
-            }
-            }
-
-            Q_gain_hat[idx3] = local_sum;
-
-        }
-        }
-        }
-
-        // End the time measurement
-        #pragma omp master
-        {
-            end_time = omp_get_wtime();
-            total_time += (end_time - start_time);
-        }
-
-        } // End of parallel region
-
-    } // End of trials
-
-    std::cout << "Mean time (s): " << total_time / trials << "\n";
-
-
-    std::cout << "Method 2: loop permutation with tiling\n";
-    total_time = 0.0;
-
-    for (int trial = 0; trial < trials; ++trial) {
-
-        #pragma omp parallel
-        {
-
-        // Start the time measurement
-        #pragma omp master
-        {
-            start_time = omp_get_wtime();
-        }
-
-        #pragma omp for collapse(3)
-        for (int ii = 0; ii < Nv; ii += tile_size){
-        for (int jj = 0; jj < Nv; jj += tile_size){
-        for (int kk = 0; kk < Nv; kk += tile_size){
-
-            for (int i = ii; i < std::min(ii + tile_size, Nv); ++i){
-            for (int j = jj; j < std::min(jj + tile_size, Nv); ++j){
-            for (int k = kk; k < std::min(kk + tile_size, Nv); ++k){
-
-                int idx3 = (i * Nv + j) * Nv + k;
-                std::complex<double> local_sum = 0.0;
-
-                for (int rr = 0; rr < Nv; rr += tile_size) {
-                for (int ss = 0; ss < Ns; ss += tile_size) {
-
-                    for (int r = rr; r < std::min(rr + tile_size, Nv); ++r){
-                    for (int s = ss; s < std::min(ss + tile_size, Ns); ++s){
-                            
-                        int idx4 = (((r * Nv + i) * Nv + j) * Nv + k);
-                        int idx5 = ((((r) * Ns + s) * Nv + i) * Nv + j) * Nv + k;
-
-                        double weight = fft_scale * gl_wts[r] * spherical_wts[s] * std::pow(gl_nodes[r], gamma + 2);
-                        local_sum += weight * beta1[idx4] * transform_prod_hat[idx5];
-
-                    }
-                    }
-
-                }
-                }
-
-                Q_gain_hat[idx3] = local_sum;
-
-            }
-            }
-            }
-
-        }
-        }
-        }
-
-        // End the time measurement
-        #pragma omp master
-        {
-            end_time = omp_get_wtime();
-            total_time += (end_time - start_time);
-        }
-
-        } // End of parallel region
-
-    } // End of trials
-
-    std::cout << "Mean time (s): " << total_time / trials << "\n";
-
-    // Free allocated memory
-    fftw_free(alpha1);
-    fftw_free(beta1);
-    fftw_free(beta2);
-    fftw_free(f_hat);
-    fftw_free(alpha1_times_f_hat);
-    fftw_free(alpha2_times_f_hat);
-    fftw_free(transform_prod_hat);
-    fftw_free(Q_gain_hat);
-
-    }
-
-    std::cout << "\nBenchmark with fftw_complex...\n"; 
-
-    {
-
     fftw_complex * alpha1 = fftw_alloc_complex(batch_size * grid_size);
     double * beta1 = fftw_alloc_real(Nv * grid_size);
     double * beta2 = fftw_alloc_real(grid_size);
@@ -544,6 +248,63 @@ int main(int argc, char** argv) {
 
     std::cout << "Mean time (s): " << total_time / trials << "\n";
 
+    std::cout << "Method 3: omp for collapse(2) + omp simd...\n";
+    total_time = 0.0;
+
+    for (int trial = 0; trial < trials; ++trial) {
+
+        #pragma omp parallel
+        {
+
+        // Start the time measurement
+        #pragma omp master
+        {
+            start_time = omp_get_wtime();
+        }
+
+        #pragma omp for collapse(2) 
+        for (int r = 0; r < Nv; ++r){
+            for (int s = 0; s < Ns; ++s){
+
+                #pragma omp simd collapse (3)
+                for (int i = 0; i < Nv; ++i){
+                    for (int j = 0; j < Nv; ++j){
+                        for (int k = 0; k < Nv; ++k){
+
+                            int idx3 = (i * Nv + j) * Nv + k;
+                            int idx5 = ((((r) * Ns + s) * Nv + i) * Nv + j) * Nv + k;
+                    
+                            double a_re = alpha1[idx5][0];
+                            double a_im = alpha1[idx5][1];
+                            double b_re = f_hat[idx3][0];
+                            double b_im = f_hat[idx3][1];
+
+                            // alpha1_times_f_hat[idx5] = fft_scale * alpha1[idx5] * f_hat[idx3];
+                            alpha1_times_f_hat[idx5][0] = fft_scale * (a_re * b_re - a_im * b_im);
+                            alpha1_times_f_hat[idx5][1] = fft_scale * (a_re * b_im + a_im * b_re);
+
+                            // alpha2_times_f_hat[idx5] = fft_scale * conj(alpha1[idx5]) * f_hat[idx3];
+                            alpha2_times_f_hat[idx5][0] = fft_scale * (a_re * b_re + a_im * b_im);
+                            alpha2_times_f_hat[idx5][1] = fft_scale * (a_re * b_im - a_im * b_re);
+
+                        }
+                    }
+                }
+            }
+        }
+
+        // End the time measurement
+        #pragma omp master
+        {
+            end_time = omp_get_wtime();
+            total_time += (end_time - start_time);
+        }
+
+        } // End of parallel region
+
+    } // End of trials
+
+    std::cout << "Mean time (s): " << total_time / trials << "\n";
 
     // Pattern 2: Nested loops with reduction
 
@@ -682,8 +443,6 @@ int main(int argc, char** argv) {
     fftw_free(alpha2_times_f_hat);
     fftw_free(transform_prod_hat);
     fftw_free(Q_gain_hat);
-
-    }
 
     return 0;
 }

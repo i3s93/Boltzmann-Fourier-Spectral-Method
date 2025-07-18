@@ -67,12 +67,12 @@ void BoltzmannOperator<FFTW_Backend>::initialize() {
     fft_plan  = fftw_plan_dft_3d(Nvx, Nvy, Nvz,
         reinterpret_cast<fftw_complex*>(data),
         reinterpret_cast<fftw_complex*>(data_hat),
-        FFTW_FORWARD, FFTW_EXHAUSTIVE);
+        FFTW_FORWARD, FFTW_ESTIMATE);
 
     ifft_plan = fftw_plan_dft_3d(Nvx, Nvy, Nvz,
             reinterpret_cast<fftw_complex*>(data_hat),
             reinterpret_cast<fftw_complex*>(data),
-            FFTW_BACKWARD, FFTW_EXHAUSTIVE);
+            FFTW_BACKWARD, FFTW_ESTIMATE);
 
     // Export wisdom immediately after plan creation using the specified filename
     fftw_export_wisdom_to_filename(wisdom_fname.c_str());
