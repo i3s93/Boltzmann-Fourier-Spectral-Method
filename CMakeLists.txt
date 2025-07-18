@@ -84,9 +84,7 @@ target_link_directories(Boltzmann PUBLIC ${CUTENSOR_LIBRARY_DIR})
 target_link_directories(Boltzmann PUBLIC ${CUQUANTUM_LIBRARY_DIR})
 
 # Link libraries (FFTW, OpenMP, CUDA, etc.)
-#
-# Note... we also need to link against ${FFTW3_THREADS_LIBRARY} if we want to use threaded versions of FFTW
-target_link_libraries(Boltzmann PUBLIC ${FFTW3_LIBRARY})
+target_link_libraries(Boltzmann PUBLIC ${FFTW3_LIBRARY} ${FFTW3_THREADS_LIBRARY})
 target_link_libraries(Boltzmann PUBLIC OpenMP::OpenMP_C OpenMP::OpenMP_CXX)
 target_link_libraries(Boltzmann PUBLIC CUDA::cufft)
 target_link_libraries(Boltzmann PUBLIC cutensor cutensornet)
