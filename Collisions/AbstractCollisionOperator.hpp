@@ -4,8 +4,6 @@
 #include <vector>
 #include <string>
 #include "../Utilities/constants.hpp"
-
-template <typename Backend>
 class AbstractCollisionOperator {
 public:
     // Constructor
@@ -13,9 +11,6 @@ public:
 
     // Pure virtual function to setup the plans and arrays for the backend
     virtual void initialize() = 0;
-
-    // Pure virtual function to precompute transform weights
-    virtual void precomputeTransformWeights() = 0;
 
     // Pure virtual function to get the backend name
     virtual std::string getBackendName() const = 0;

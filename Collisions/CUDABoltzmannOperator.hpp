@@ -55,7 +55,7 @@ std::string cufftGetErrorString(cufftResult error);
 
 struct CUDA_Backend {};
 template <>
-class BoltzmannOperator<CUDA_Backend> : public AbstractCollisionOperator<CUDA_Backend> {
+class BoltzmannOperator<CUDA_Backend> : public AbstractCollisionOperator {
 public:
     // Constructor which accepts Gauss-Legendre and spherical quadrature objects as
     // well as the number of grid points in each velocity direction
@@ -70,8 +70,8 @@ public:
     // Method to setup the CUDA resources (must be defined)
     void initialize() override;
 
-    // Precomputes the transform weights used in the cuFFT implementation (must be defined)
-    void precomputeTransformWeights() override;
+    // Precomputes the transform weights used in the cuFFT implementation
+    void precomputeTransformWeights();
 
     // Returns the name of the backend being used
     std::string getBackendName() const override {

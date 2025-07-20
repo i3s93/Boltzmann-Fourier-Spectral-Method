@@ -23,7 +23,7 @@ T sincc(T x){
 struct FFTW_Backend {};
 
 template <>
-class BoltzmannOperator<FFTW_Backend> : public AbstractCollisionOperator<FFTW_Backend> {
+class BoltzmannOperator<FFTW_Backend> : public AbstractCollisionOperator {
 public:
     // Constructor which accepts Gauss-Legendre and spherical quadrature objects as
     // well as the number of grid points in each velocity direction
@@ -42,9 +42,6 @@ public:
 
     // Method to setup the FFTW3 plans and arrays (must be defined)
     void initialize() override;
-
-    // Precomputes the transform weights used in the FFTW3 implementation (must be defined)
-    void precomputeTransformWeights() override;
 
     // Returns the name of the backend being used
     std::string getBackendName() const override {
@@ -91,13 +88,13 @@ private:
     fftw_plan ifft_plan;
 
     // Weights needed to scale the transforms
-    fftw_complex* alpha1;
-    double* beta1;
-    double* beta2;
+    // fftw_complex* alpha1;
+    // double* beta1;
+    // double* beta2;
 
     // Generic arrays to create plans for the forward and inverse transforms 
-    fftw_complex* data;
-    fftw_complex* data_hat;
+    // fftw_complex* data;
+    // fftw_complex* data_hat;
 
     fftw_complex* f; 
     fftw_complex* f_hat; 
