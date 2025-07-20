@@ -117,11 +117,13 @@ int main(int argc, char** argv) {
     double initialize_total_time = initialize_end_time - initialize_time;
     std::cout << "Initialization time (s): " << initialize_total_time << " seconds\n";
 
+    /*
     double precompute_time = omp_get_wtime();
     collision_operator.precomputeTransformWeights();
     double precompute_end_time = omp_get_wtime();
     double precompute_total_time = precompute_end_time - precompute_time;
     std::cout << "Precomputation time (s): " << precompute_total_time << " seconds\n";
+    */
 
     // Container to hold the run data CPU
     std::vector<double> collision_times;

@@ -1,0 +1,737 @@
+Nv=32 Ns=12 Threads=1
+
+
+Run arguments:
+Nv = 32
+Ns = 12
+trials = 20
+Failed to import wisdom from file: fftw_wisdom.dat
+Initialization time (s): 16.9942 seconds
+Precomputation time (s): 0.314738 seconds
+
+Run statistics for FFTW
+Total number of samples taken: 20
+Mean runtime (s): 2.29618108e-01
+Min runtime (s): 2.25836992e-01
+Max runtime (s): 2.93262959e-01
+stdev: 1.49870503e-02
+
+Approximation errors:
+L1 error: 1.54029638e-03
+L2 error: 1.01189917e-04
+Linf error: 4.25120273e-05
+
+
+Nv=32 Ns=12 Threads=2
+
+
+Run arguments:
+Nv = 32
+Ns = 12
+trials = 20
+Initialization time (s): 0.08218 seconds
+Precomputation time (s): 0.159337 seconds
+
+Run statistics for FFTW
+Total number of samples taken: 20
+Mean runtime (s): 1.46470046e-01
+Min runtime (s): 1.39637947e-01
+Max runtime (s): 1.71090126e-01
+stdev: 8.05465589e-03
+
+Approximation errors:
+L1 error: 1.54029638e-03
+L2 error: 1.01189917e-04
+Linf error: 8.50240546e-05
+
+
+Nv=32 Ns=12 Threads=4
+
+
+Run arguments:
+Nv = 32
+Ns = 12
+trials = 20
+Initialization time (s): 0.086024 seconds
+Precomputation time (s): 0.0819099 seconds
+
+Run statistics for FFTW
+Total number of samples taken: 20
+Mean runtime (s): 1.21753252e-01
+Min runtime (s): 1.19045019e-01
+Max runtime (s): 1.35270834e-01
+stdev: 3.26658451e-03
+
+Approximation errors:
+L1 error: 1.54029638e-03
+L2 error: 1.01189917e-04
+Linf error: 9.01921232e-05
+
+
+Nv=32 Ns=12 Threads=8
+
+
+Run arguments:
+Nv = 32
+Ns = 12
+trials = 20
+Initialization time (s): 0.0822701 seconds
+Precomputation time (s): 0.0479689 seconds
+
+Run statistics for FFTW
+Total number of samples taken: 20
+Mean runtime (s): 1.14945841e-01
+Min runtime (s): 1.12105131e-01
+Max runtime (s): 1.46685839e-01
+stdev: 7.50304600e-03
+
+Approximation errors:
+L1 error: 1.54029638e-03
+L2 error: 1.01189917e-04
+Linf error: 1.09520976e-04
+
+
+Nv=32 Ns=12 Threads=16
+
+
+Run arguments:
+Nv = 32
+Ns = 12
+trials = 20
+Initialization time (s): 0.0827742 seconds
+Precomputation time (s): 0.0280211 seconds
+
+Run statistics for FFTW
+Total number of samples taken: 20
+Mean runtime (s): 1.07827699e-01
+Min runtime (s): 1.05075121e-01
+Max runtime (s): 1.35905027e-01
+stdev: 6.64039593e-03
+
+Approximation errors:
+L1 error: 1.54029638e-03
+L2 error: 1.01189917e-04
+Linf error: 1.46549914e-04
+
+
+Nv=32 Ns=12 Threads=32
+
+
+Run arguments:
+Nv = 32
+Ns = 12
+trials = 20
+Initialization time (s): 0.095351 seconds
+Precomputation time (s): 0.015624 seconds
+
+Run statistics for FFTW
+Total number of samples taken: 20
+Mean runtime (s): 5.71337581e-02
+Min runtime (s): 5.49058914e-02
+Max runtime (s): 7.94901848e-02
+stdev: 5.29595676e-03
+
+Approximation errors:
+L1 error: 1.54029638e-03
+L2 error: 1.01189917e-04
+Linf error: 2.11949954e-04
+
+
+Nv=32 Ns=12 Threads=64
+
+
+Run arguments:
+Nv = 32
+Ns = 12
+trials = 20
+Initialization time (s): 0.0875831 seconds
+Precomputation time (s): 0.00814104 seconds
+
+Run statistics for FFTW
+Total number of samples taken: 20
+Mean runtime (s): 3.02054048e-02
+Min runtime (s): 2.86569595e-02
+Max runtime (s): 5.23829460e-02
+stdev: 5.22573987e-03
+
+Approximation errors:
+L1 error: 1.54029638e-03
+L2 error: 1.01189917e-04
+Linf error: 4.23899908e-04
+
+
+Nv=32 Ns=12 Threads=128
+
+
+Run arguments:
+Nv = 32
+Ns = 12
+trials = 20
+Initialization time (s): 0.0826659 seconds
+Precomputation time (s): 0.00555897 seconds
+
+Run statistics for FFTW
+Total number of samples taken: 20
+Mean runtime (s): 1.78222179e-02
+Min runtime (s): 1.51309967e-02
+Max runtime (s): 6.07628822e-02
+stdev: 1.01233863e-02
+
+Approximation errors:
+L1 error: 1.54029638e-03
+L2 error: 1.01189917e-04
+Linf error: 4.40496171e-04
+
+
+Nv=64 Ns=12 Threads=1
+
+
+Run arguments:
+Nv = 64
+Ns = 12
+trials = 20
+Initialization time (s): 83.6492 seconds
+Precomputation time (s): 4.97083 seconds
+
+Run statistics for FFTW
+Total number of samples taken: 20
+Mean runtime (s): 4.60129657e+00
+Min runtime (s): 4.55075693e+00
+Max runtime (s): 5.45041895e+00
+stdev: 2.00202236e-01
+
+Approximation errors:
+L1 error: 8.91496694e-11
+L2 error: 8.30922032e-12
+Linf error: 3.06854889e-12
+
+
+Nv=64 Ns=12 Threads=2
+
+
+Run arguments:
+Nv = 64
+Ns = 12
+trials = 20
+Initialization time (s): 0.0857019 seconds
+Precomputation time (s): 2.49356 seconds
+
+Run statistics for FFTW
+Total number of samples taken: 20
+Mean runtime (s): 2.78157710e+00
+Min runtime (s): 2.74364686e+00
+Max runtime (s): 3.07844400e+00
+stdev: 7.07372032e-02
+
+Approximation errors:
+L1 error: 8.91496694e-11
+L2 error: 8.30922032e-12
+Linf error: 6.13708216e-12
+
+
+Nv=64 Ns=12 Threads=4
+
+
+Run arguments:
+Nv = 64
+Ns = 12
+trials = 20
+Initialization time (s): 0.0926781 seconds
+Precomputation time (s): 1.2513 seconds
+
+Run statistics for FFTW
+Total number of samples taken: 20
+Mean runtime (s): 2.37452921e+00
+Min runtime (s): 2.13297892e+00
+Max runtime (s): 2.39945006e+00
+stdev: 5.73131962e-02
+
+Approximation errors:
+L1 error: 8.91496694e-11
+L2 error: 8.30922032e-12
+Linf error: 6.44561515e-12
+
+
+Nv=64 Ns=12 Threads=8
+
+
+Run arguments:
+Nv = 64
+Ns = 12
+trials = 20
+Initialization time (s): 0.0924981 seconds
+Precomputation time (s): 0.641725 seconds
+
+Run statistics for FFTW
+Total number of samples taken: 20
+Mean runtime (s): 2.53179005e+00
+Min runtime (s): 2.49994779e+00
+Max runtime (s): 2.73999906e+00
+stdev: 5.02321366e-02
+
+Approximation errors:
+L1 error: 8.91496694e-11
+L2 error: 8.30922032e-12
+Linf error: 7.65587903e-12
+
+
+Nv=64 Ns=12 Threads=16
+
+
+Run arguments:
+Nv = 64
+Ns = 12
+trials = 20
+Initialization time (s): 0.0844331 seconds
+Precomputation time (s): 0.369529 seconds
+
+Run statistics for FFTW
+Total number of samples taken: 20
+Mean runtime (s): 2.50237155e+00
+Min runtime (s): 2.47885299e+00
+Max runtime (s): 2.58477998e+00
+stdev: 2.18599372e-02
+
+Approximation errors:
+L1 error: 8.91496694e-11
+L2 error: 8.30922032e-12
+Linf error: 1.18069691e-11
+
+
+Nv=64 Ns=12 Threads=32
+
+
+Run arguments:
+Nv = 64
+Ns = 12
+trials = 20
+Initialization time (s): 0.083492 seconds
+Precomputation time (s): 0.192733 seconds
+
+Run statistics for FFTW
+Total number of samples taken: 20
+Mean runtime (s): 1.25950768e+00
+Min runtime (s): 1.24753094e+00
+Max runtime (s): 1.29022598e+00
+stdev: 9.70447479e-03
+
+Approximation errors:
+L1 error: 8.91496694e-11
+L2 error: 8.30922032e-12
+Linf error: 2.03786936e-11
+
+
+Nv=64 Ns=12 Threads=64
+
+
+Run arguments:
+Nv = 64
+Ns = 12
+trials = 20
+Initialization time (s): 0.0860171 seconds
+Precomputation time (s): 0.101003 seconds
+
+Run statistics for FFTW
+Total number of samples taken: 20
+Mean runtime (s): 6.34330106e-01
+Min runtime (s): 6.11554861e-01
+Max runtime (s): 6.76242828e-01
+stdev: 1.22154672e-02
+
+Approximation errors:
+L1 error: 8.91496694e-11
+L2 error: 8.30922032e-12
+Linf error: 3.64786999e-11
+
+
+Nv=64 Ns=12 Threads=128
+
+
+Run arguments:
+Nv = 64
+Ns = 12
+trials = 20
+Initialization time (s): 0.0908601 seconds
+Precomputation time (s): 0.0537109 seconds
+
+Run statistics for FFTW
+Total number of samples taken: 20
+Mean runtime (s): 3.26530254e-01
+Min runtime (s): 3.17579031e-01
+Max runtime (s): 3.96646023e-01
+stdev: 1.68271021e-02
+
+Approximation errors:
+L1 error: 8.91496694e-11
+L2 error: 8.30922032e-12
+Linf error: 7.29572193e-11
+
+
+Nv=32 Ns=32 Threads=1
+
+
+Run arguments:
+Nv = 32
+Ns = 32
+trials = 20
+Initialization time (s): 0.0942461 seconds
+Precomputation time (s): 0.805771 seconds
+
+Run statistics for FFTW
+Total number of samples taken: 20
+Mean runtime (s): 6.31047666e-01
+Min runtime (s): 6.21701002e-01
+Max runtime (s): 7.85201073e-01
+stdev: 3.62950440e-02
+
+Approximation errors:
+L1 error: 1.17016592e-03
+L2 error: 9.52999355e-05
+Linf error: 4.41548044e-05
+
+
+Nv=32 Ns=32 Threads=2
+
+
+Run arguments:
+Nv = 32
+Ns = 32
+trials = 20
+Initialization time (s): 0.540797 seconds
+Precomputation time (s): 0.402037 seconds
+
+Run statistics for FFTW
+Total number of samples taken: 20
+Mean runtime (s): 4.00643647e-01
+Min runtime (s): 3.91540051e-01
+Max runtime (s): 4.59791899e-01
+stdev: 1.43466655e-02
+
+Approximation errors:
+L1 error: 1.17016592e-03
+L2 error: 9.52999355e-05
+Linf error: 8.83096087e-05
+
+
+Nv=32 Ns=32 Threads=4
+
+
+Run arguments:
+Nv = 32
+Ns = 32
+trials = 20
+Initialization time (s): 0.0850351 seconds
+Precomputation time (s): 0.203858 seconds
+
+Run statistics for FFTW
+Total number of samples taken: 20
+Mean runtime (s): 3.25743055e-01
+Min runtime (s): 3.19267988e-01
+Max runtime (s): 3.60938072e-01
+stdev: 8.50189222e-03
+
+Approximation errors:
+L1 error: 1.17016592e-03
+L2 error: 9.52999355e-05
+Linf error: 9.29323505e-05
+
+
+Nv=32 Ns=32 Threads=8
+
+
+Run arguments:
+Nv = 32
+Ns = 32
+trials = 20
+Initialization time (s): 0.189073 seconds
+Precomputation time (s): 0.109571 seconds
+
+Run statistics for FFTW
+Total number of samples taken: 20
+Mean runtime (s): 3.08941948e-01
+Min runtime (s): 3.02745819e-01
+Max runtime (s): 3.80045891e-01
+stdev: 1.67858991e-02
+
+Approximation errors:
+L1 error: 1.17016592e-03
+L2 error: 9.52999355e-05
+Linf error: 1.08230863e-04
+
+
+Nv=32 Ns=32 Threads=16
+
+
+Run arguments:
+Nv = 32
+Ns = 32
+trials = 20
+Initialization time (s): 0.0854189 seconds
+Precomputation time (s): 0.0654581 seconds
+
+Run statistics for FFTW
+Total number of samples taken: 20
+Mean runtime (s): 2.86916161e-01
+Min runtime (s): 2.80637026e-01
+Max runtime (s): 3.49364996e-01
+stdev: 1.47790001e-02
+
+Approximation errors:
+L1 error: 1.17016592e-03
+L2 error: 9.52999355e-05
+Linf error: 1.38780213e-04
+
+
+Nv=32 Ns=32 Threads=32
+
+
+Run arguments:
+Nv = 32
+Ns = 32
+trials = 20
+Initialization time (s): 0.0940039 seconds
+Precomputation time (s): 0.036139 seconds
+
+Run statistics for FFTW
+Total number of samples taken: 20
+Mean runtime (s): 1.47544253e-01
+Min runtime (s): 1.43919945e-01
+Max runtime (s): 1.86871052e-01
+stdev: 9.28256779e-03
+
+Approximation errors:
+L1 error: 1.17016592e-03
+L2 error: 9.52999355e-05
+Linf error: 1.87249184e-04
+
+
+Nv=32 Ns=32 Threads=64
+
+
+Run arguments:
+Nv = 32
+Ns = 32
+trials = 20
+Initialization time (s): 0.0822909 seconds
+Precomputation time (s): 0.019942 seconds
+
+Run statistics for FFTW
+Total number of samples taken: 20
+Mean runtime (s): 7.95065522e-02
+Min runtime (s): 7.52859116e-02
+Max runtime (s): 1.13795042e-01
+stdev: 8.29575628e-03
+
+Approximation errors:
+L1 error: 1.17016592e-03
+L2 error: 9.52999355e-05
+Linf error: 3.73529530e-04
+
+
+Nv=32 Ns=32 Threads=128
+
+
+Run arguments:
+Nv = 32
+Ns = 32
+trials = 20
+Initialization time (s): 0.0838091 seconds
+Precomputation time (s): 0.011543 seconds
+
+Run statistics for FFTW
+Total number of samples taken: 20
+Mean runtime (s): 4.55624938e-02
+Min runtime (s): 4.23178673e-02
+Max runtime (s): 9.53600407e-02
+stdev: 1.17243278e-02
+
+Approximation errors:
+L1 error: 1.17016592e-03
+L2 error: 9.52999355e-05
+Linf error: 3.87985398e-04
+
+
+Nv=64 Ns=32 Threads=1
+
+
+Run arguments:
+Nv = 64
+Ns = 32
+trials = 20
+Initialization time (s): 0.083919 seconds
+Precomputation time (s): 12.7363 seconds
+
+Run statistics for FFTW
+Total number of samples taken: 20
+Mean runtime (s): 1.35312428e+01
+Min runtime (s): 1.32967539e+01
+Max runtime (s): 1.72757511e+01
+stdev: 8.83222293e-01
+
+Approximation errors:
+L1 error: 8.89085469e-11
+L2 error: 8.31384229e-12
+Linf error: 3.07323654e-12
+
+
+Nv=64 Ns=32 Threads=2
+
+
+Run arguments:
+Nv = 64
+Ns = 32
+trials = 20
+Initialization time (s): 0.0825419 seconds
+Precomputation time (s): 6.37222 seconds
+
+Run statistics for FFTW
+Total number of samples taken: 20
+Mean runtime (s): 8.19132740e+00
+Min runtime (s): 7.96666002e+00
+Max runtime (s): 9.62898397e+00
+stdev: 4.13595496e-01
+
+Approximation errors:
+L1 error: 8.89085469e-11
+L2 error: 8.31384229e-12
+Linf error: 6.14646571e-12
+
+
+Nv=64 Ns=32 Threads=4
+
+
+Run arguments:
+Nv = 64
+Ns = 32
+trials = 20
+Initialization time (s): 0.092695 seconds
+Precomputation time (s): 3.19499 seconds
+
+Run statistics for FFTW
+Total number of samples taken: 20
+Mean runtime (s): 6.70620909e+00
+Min runtime (s): 6.53652287e+00
+Max runtime (s): 7.01143789e+00
+stdev: 1.07923801e-01
+
+Approximation errors:
+L1 error: 8.89085469e-11
+L2 error: 8.31384229e-12
+Linf error: 6.45575447e-12
+
+
+Nv=64 Ns=32 Threads=8
+
+
+Run arguments:
+Nv = 64
+Ns = 32
+trials = 20
+Initialization time (s): 0.0847819 seconds
+Precomputation time (s): 1.65099 seconds
+
+Run statistics for FFTW
+Total number of samples taken: 20
+Mean runtime (s): 6.94250829e+00
+Min runtime (s): 6.76219392e+00
+Max runtime (s): 7.59054494e+00
+stdev: 1.68706629e-01
+
+Approximation errors:
+L1 error: 8.89085469e-11
+L2 error: 8.31384229e-12
+Linf error: 7.68712681e-12
+
+
+Nv=64 Ns=32 Threads=16
+
+
+Run arguments:
+Nv = 64
+Ns = 32
+trials = 20
+Initialization time (s): 0.114491 seconds
+Precomputation time (s): 0.919598 seconds
+
+Run statistics for FFTW
+Total number of samples taken: 20
+Mean runtime (s): 6.79369411e+00
+Min runtime (s): 6.63642097e+00
+Max runtime (s): 7.03701615e+00
+stdev: 7.91237357e-02
+
+Approximation errors:
+L1 error: 8.89085469e-11
+L2 error: 8.31384229e-12
+Linf error: 1.18643183e-11
+
+
+Nv=64 Ns=32 Threads=32
+
+
+Run arguments:
+Nv = 64
+Ns = 32
+trials = 20
+Initialization time (s): 0.092638 seconds
+Precomputation time (s): 0.465383 seconds
+
+Run statistics for FFTW
+Total number of samples taken: 20
+Mean runtime (s): 3.43012516e+00
+Min runtime (s): 3.40677190e+00
+Max runtime (s): 3.53636193e+00
+stdev: 2.81893991e-02
+
+Approximation errors:
+L1 error: 8.89085469e-11
+L2 error: 8.31384229e-12
+Linf error: 2.04932130e-11
+
+
+Nv=64 Ns=32 Threads=64
+
+
+Run arguments:
+Nv = 64
+Ns = 32
+trials = 20
+Initialization time (s): 0.0947349 seconds
+Precomputation time (s): 0.246926 seconds
+
+Run statistics for FFTW
+Total number of samples taken: 20
+Mean runtime (s): 1.73793745e+00
+Min runtime (s): 1.71703720e+00
+Max runtime (s): 1.76747394e+00
+stdev: 1.17272187e-02
+
+Approximation errors:
+L1 error: 8.89085469e-11
+L2 error: 8.31384229e-12
+Linf error: 3.66756063e-11
+
+
+Nv=64 Ns=32 Threads=128
+
+
+Run arguments:
+Nv = 64
+Ns = 32
+trials = 20
+Initialization time (s): 0.083462 seconds
+Precomputation time (s): 0.124922 seconds
+
+Run statistics for FFTW
+Total number of samples taken: 20
+Mean runtime (s): 9.10453880e-01
+Min runtime (s): 8.92593861e-01
+Max runtime (s): 9.84523058e-01
+stdev: 1.83817670e-02
+
+Approximation errors:
+L1 error: 8.89085469e-11
+L2 error: 8.31384229e-12
+Linf error: 7.33429915e-11
+
+

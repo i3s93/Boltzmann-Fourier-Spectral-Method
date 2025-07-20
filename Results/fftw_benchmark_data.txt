@@ -1,0 +1,1216 @@
+Nv=32 Ns=12 Threads=1
+
+
+Run arguments:
+Nv = 32
+Ns = 12
+trials = 20
+Approximation error (Plan many):
+L1 error: 9.92692e-13
+
+Run statistics for Plan many
+Total number of samples taken: 20
+Mean runtime (s): 1.04880357e-01
+Min runtime (s): 1.03447914e-01
+Max runtime (s): 1.16155148e-01
+stdev: 2.74493758e-03
+
+Approximation error (manual batching with FFTW_ESTIMATE):
+L1 error: 1.39489974e-12
+
+Run statistics for Manual batching with FFTW_ESTIMATE
+Total number of samples taken: 20
+Mean runtime (s): 1.04218674e-01
+Min runtime (s): 1.03604078e-01
+Max runtime (s): 1.04836941e-01
+stdev: 2.96402586e-04
+
+Approximation error (manual batching with FFTW_EXHAUSTIVE):
+L1 error: 1.70252917e-12
+
+Run statistics for Manual batching with FFTW_EXHAUSTIVE
+Total number of samples taken: 20
+Mean runtime (s): 4.47216272e-02
+Min runtime (s): 4.44290638e-02
+Max runtime (s): 4.61790562e-02
+stdev: 3.72449174e-04
+
+
+Nv=32 Ns=12 Threads=2
+
+
+Run arguments:
+Nv = 32
+Ns = 12
+trials = 20
+Approximation error (Plan many):
+L1 error: 9.92692e-13
+
+Run statistics for Plan many
+Total number of samples taken: 20
+Mean runtime (s): 5.15882492e-02
+Min runtime (s): 5.10709286e-02
+Max runtime (s): 5.74967861e-02
+stdev: 1.45482481e-03
+
+Approximation error (manual batching with FFTW_ESTIMATE):
+L1 error: 1.39489974e-12
+
+Run statistics for Manual batching with FFTW_ESTIMATE
+Total number of samples taken: 20
+Mean runtime (s): 5.25599241e-02
+Min runtime (s): 5.21881580e-02
+Max runtime (s): 5.38928509e-02
+stdev: 4.87646608e-04
+
+Approximation error (manual batching with FFTW_EXHAUSTIVE):
+L1 error: 1.70252917e-12
+
+Run statistics for Manual batching with FFTW_EXHAUSTIVE
+Total number of samples taken: 20
+Mean runtime (s): 2.22481370e-02
+Min runtime (s): 2.20708847e-02
+Max runtime (s): 2.37460136e-02
+stdev: 3.61730744e-04
+
+
+Nv=32 Ns=12 Threads=4
+
+
+Run arguments:
+Nv = 32
+Ns = 12
+trials = 20
+Approximation error (Plan many):
+L1 error: 9.92692e-13
+
+Run statistics for Plan many
+Total number of samples taken: 20
+Mean runtime (s): 2.64703989e-02
+Min runtime (s): 2.62429714e-02
+Max runtime (s): 2.98769474e-02
+stdev: 8.04367652e-04
+
+Approximation error (manual batching with FFTW_ESTIMATE):
+L1 error: 1.39489974e-12
+
+Run statistics for Manual batching with FFTW_ESTIMATE
+Total number of samples taken: 20
+Mean runtime (s): 2.68501043e-02
+Min runtime (s): 2.66859531e-02
+Max runtime (s): 2.81629562e-02
+stdev: 3.19880344e-04
+
+Approximation error (manual batching with FFTW_EXHAUSTIVE):
+L1 error: 1.70252917e-12
+
+Run statistics for Manual batching with FFTW_EXHAUSTIVE
+Total number of samples taken: 20
+Mean runtime (s): 1.16415024e-02
+Min runtime (s): 1.13289356e-02
+Max runtime (s): 1.31978989e-02
+stdev: 3.99244617e-04
+
+
+Nv=32 Ns=12 Threads=8
+
+
+Run arguments:
+Nv = 32
+Ns = 12
+trials = 20
+Approximation error (Plan many):
+L1 error: 9.92692e-13
+
+Run statistics for Plan many
+Total number of samples taken: 20
+Mean runtime (s): 1.33721948e-02
+Min runtime (s): 1.31518841e-02
+Max runtime (s): 1.54070854e-02
+stdev: 5.20461228e-04
+
+Approximation error (manual batching with FFTW_ESTIMATE):
+L1 error: 1.39489974e-12
+
+Run statistics for Manual batching with FFTW_ESTIMATE
+Total number of samples taken: 20
+Mean runtime (s): 1.34439349e-02
+Min runtime (s): 1.33879185e-02
+Max runtime (s): 1.35538578e-02
+stdev: 3.13848616e-05
+
+Approximation error (manual batching with FFTW_EXHAUSTIVE):
+L1 error: 1.70252917e-12
+
+Run statistics for Manual batching with FFTW_EXHAUSTIVE
+Total number of samples taken: 20
+Mean runtime (s): 5.71945906e-03
+Min runtime (s): 5.45883179e-03
+Max runtime (s): 8.26001167e-03
+stdev: 6.26203034e-04
+
+
+Nv=32 Ns=12 Threads=16
+
+
+Run arguments:
+Nv = 32
+Ns = 12
+trials = 20
+Approximation error (Plan many):
+L1 error: 9.92692e-13
+
+Run statistics for Plan many
+Total number of samples taken: 20
+Mean runtime (s): 6.72359467e-03
+Min runtime (s): 6.45399094e-03
+Max runtime (s): 8.50391388e-03
+stdev: 4.29942076e-04
+
+Approximation error (manual batching with FFTW_ESTIMATE):
+L1 error: 1.39489974e-12
+
+Run statistics for Manual batching with FFTW_ESTIMATE
+Total number of samples taken: 20
+Mean runtime (s): 6.60254955e-03
+Min runtime (s): 6.49094582e-03
+Max runtime (s): 6.84189796e-03
+stdev: 1.04885719e-04
+
+Approximation error (manual batching with FFTW_EXHAUSTIVE):
+L1 error: 1.70252917e-12
+
+Run statistics for Manual batching with FFTW_EXHAUSTIVE
+Total number of samples taken: 20
+Mean runtime (s): 2.84532309e-03
+Min runtime (s): 2.51412392e-03
+Max runtime (s): 7.08699226e-03
+stdev: 1.00539482e-03
+
+
+Nv=32 Ns=12 Threads=32
+
+
+Run arguments:
+Nv = 32
+Ns = 12
+trials = 20
+Approximation error (Plan many):
+L1 error: 9.92692e-13
+
+Run statistics for Plan many
+Total number of samples taken: 20
+Mean runtime (s): 3.74194384e-03
+Min runtime (s): 3.62801552e-03
+Max runtime (s): 5.58495522e-03
+stdev: 4.33908661e-04
+
+Approximation error (manual batching with FFTW_ESTIMATE):
+L1 error: 1.39489974e-12
+
+Run statistics for Manual batching with FFTW_ESTIMATE
+Total number of samples taken: 20
+Mean runtime (s): 3.70627642e-03
+Min runtime (s): 3.69095802e-03
+Max runtime (s): 3.75199318e-03
+stdev: 1.42812268e-05
+
+Approximation error (manual batching with FFTW_EXHAUSTIVE):
+L1 error: 1.70252917e-12
+
+Run statistics for Manual batching with FFTW_EXHAUSTIVE
+Total number of samples taken: 20
+Mean runtime (s): 1.94735527e-03
+Min runtime (s): 1.56998634e-03
+Max runtime (s): 7.76910782e-03
+stdev: 1.37066330e-03
+
+
+Nv=32 Ns=12 Threads=64
+
+
+Run arguments:
+Nv = 32
+Ns = 12
+trials = 20
+Approximation error (Plan many):
+L1 error: 9.92692e-13
+
+Run statistics for Plan many
+Total number of samples taken: 20
+Mean runtime (s): 2.04465389e-03
+Min runtime (s): 1.95002556e-03
+Max runtime (s): 3.58104706e-03
+stdev: 3.61729813e-04
+
+Approximation error (manual batching with FFTW_ESTIMATE):
+L1 error: 1.39489974e-12
+
+Run statistics for Manual batching with FFTW_ESTIMATE
+Total number of samples taken: 20
+Mean runtime (s): 1.99394226e-03
+Min runtime (s): 1.97911263e-03
+Max runtime (s): 2.01702118e-03
+stdev: 1.01749897e-05
+
+Approximation error (manual batching with FFTW_EXHAUSTIVE):
+L1 error: 1.70252917e-12
+
+Run statistics for Manual batching with FFTW_EXHAUSTIVE
+Total number of samples taken: 20
+Mean runtime (s): 1.79561377e-03
+Min runtime (s): 9.85145569e-04
+Max runtime (s): 1.01168156e-02
+stdev: 2.22940802e-03
+
+
+Nv=32 Ns=12 Threads=128
+
+
+Run arguments:
+Nv = 32
+Ns = 12
+trials = 20
+Approximation error (Plan many):
+L1 error: 9.92692e-13
+
+Run statistics for Plan many
+Total number of samples taken: 20
+Mean runtime (s): 1.25380754e-03
+Min runtime (s): 1.16300583e-03
+Max runtime (s): 2.55107880e-03
+stdev: 3.05681397e-04
+
+Approximation error (manual batching with FFTW_ESTIMATE):
+L1 error: 1.39489974e-12
+
+Run statistics for Manual batching with FFTW_ESTIMATE
+Total number of samples taken: 20
+Mean runtime (s): 1.15166903e-03
+Min runtime (s): 1.11794472e-03
+Max runtime (s): 1.18803978e-03
+stdev: 1.95876994e-05
+
+Approximation error (manual batching with FFTW_EXHAUSTIVE):
+L1 error: 1.70252917e-12
+
+Run statistics for Manual batching with FFTW_EXHAUSTIVE
+Total number of samples taken: 20
+Mean runtime (s): 2.23419666e-03
+Min runtime (s): 8.37802887e-04
+Max runtime (s): 1.06849670e-02
+stdev: 3.07730717e-03
+
+
+Nv=64 Ns=12 Threads=1
+
+
+Run arguments:
+Nv = 64
+Ns = 12
+trials = 20
+Approximation error (Plan many):
+L1 error: 2.20862e-12
+
+Run statistics for Plan many
+Total number of samples taken: 20
+Mean runtime (s): 9.94572531e+00
+Min runtime (s): 9.83344793e+00
+Max runtime (s): 1.01019719e+01
+stdev: 4.46405495e-02
+
+Approximation error (manual batching with FFTW_ESTIMATE):
+L1 error: 3.09405792e-12
+
+Run statistics for Manual batching with FFTW_ESTIMATE
+Total number of samples taken: 20
+Mean runtime (s): 9.98002133e+00
+Min runtime (s): 9.96799207e+00
+Max runtime (s): 9.99182701e+00
+stdev: 6.67121481e-03
+
+Approximation error (manual batching with FFTW_EXHAUSTIVE):
+L1 error: 3.90684359e-12
+
+Run statistics for Manual batching with FFTW_EXHAUSTIVE
+Total number of samples taken: 20
+Mean runtime (s): 9.63334370e-01
+Min runtime (s): 9.62080956e-01
+Max runtime (s): 9.68520880e-01
+stdev: 1.73721145e-03
+
+
+Nv=64 Ns=12 Threads=2
+
+
+Run arguments:
+Nv = 64
+Ns = 12
+trials = 20
+Approximation error (Plan many):
+L1 error: 2.20862e-12
+
+Run statistics for Plan many
+Total number of samples taken: 20
+Mean runtime (s): 5.04641867e+00
+Min runtime (s): 5.02220297e+00
+Max runtime (s): 5.10944605e+00
+stdev: 2.55143191e-02
+
+Approximation error (manual batching with FFTW_ESTIMATE):
+L1 error: 3.09405792e-12
+
+Run statistics for Manual batching with FFTW_ESTIMATE
+Total number of samples taken: 20
+Mean runtime (s): 5.04651674e+00
+Min runtime (s): 5.01754689e+00
+Max runtime (s): 5.06328797e+00
+stdev: 1.26656152e-02
+
+Approximation error (manual batching with FFTW_EXHAUSTIVE):
+L1 error: 3.90684359e-12
+
+Run statistics for Manual batching with FFTW_EXHAUSTIVE
+Total number of samples taken: 20
+Mean runtime (s): 4.83861041e-01
+Min runtime (s): 4.83031988e-01
+Max runtime (s): 4.87481117e-01
+stdev: 9.96471114e-04
+
+
+Nv=64 Ns=12 Threads=4
+
+
+Run arguments:
+Nv = 64
+Ns = 12
+trials = 20
+Approximation error (Plan many):
+L1 error: 2.20862e-12
+
+Run statistics for Plan many
+Total number of samples taken: 20
+Mean runtime (s): 2.86298318e+00
+Min runtime (s): 2.84651494e+00
+Max runtime (s): 2.93147016e+00
+stdev: 2.00903213e-02
+
+Approximation error (manual batching with FFTW_ESTIMATE):
+L1 error: 3.09405792e-12
+
+Run statistics for Manual batching with FFTW_ESTIMATE
+Total number of samples taken: 20
+Mean runtime (s): 2.86819345e+00
+Min runtime (s): 2.85485506e+00
+Max runtime (s): 2.87912703e+00
+stdev: 8.17450197e-03
+
+Approximation error (manual batching with FFTW_EXHAUSTIVE):
+L1 error: 3.90684359e-12
+
+Run statistics for Manual batching with FFTW_EXHAUSTIVE
+Total number of samples taken: 20
+Mean runtime (s): 2.41163063e-01
+Min runtime (s): 2.39366055e-01
+Max runtime (s): 2.44714975e-01
+stdev: 1.26427548e-03
+
+
+Nv=64 Ns=12 Threads=8
+
+
+Run arguments:
+Nv = 64
+Ns = 12
+trials = 20
+Approximation error (Plan many):
+L1 error: 2.20862e-12
+
+Run statistics for Plan many
+Total number of samples taken: 20
+Mean runtime (s): 1.43765110e+00
+Min runtime (s): 1.42910504e+00
+Max runtime (s): 1.46636510e+00
+stdev: 8.60963591e-03
+
+Approximation error (manual batching with FFTW_ESTIMATE):
+L1 error: 3.09405792e-12
+
+Run statistics for Manual batching with FFTW_ESTIMATE
+Total number of samples taken: 20
+Mean runtime (s): 1.44858534e+00
+Min runtime (s): 1.43558788e+00
+Max runtime (s): 1.45966411e+00
+stdev: 7.11782131e-03
+
+Approximation error (manual batching with FFTW_EXHAUSTIVE):
+L1 error: 3.90684359e-12
+
+Run statistics for Manual batching with FFTW_EXHAUSTIVE
+Total number of samples taken: 20
+Mean runtime (s): 1.22894228e-01
+Min runtime (s): 1.21988773e-01
+Max runtime (s): 1.25725031e-01
+stdev: 1.10996586e-03
+
+
+Nv=64 Ns=12 Threads=16
+
+
+Run arguments:
+Nv = 64
+Ns = 12
+trials = 20
+Approximation error (Plan many):
+L1 error: 2.20862e-12
+
+Run statistics for Plan many
+Total number of samples taken: 20
+Mean runtime (s): 7.22247505e-01
+Min runtime (s): 7.17354059e-01
+Max runtime (s): 7.49999046e-01
+stdev: 7.82114124e-03
+
+Approximation error (manual batching with FFTW_ESTIMATE):
+L1 error: 3.09405792e-12
+
+Run statistics for Manual batching with FFTW_ESTIMATE
+Total number of samples taken: 20
+Mean runtime (s): 7.21887612e-01
+Min runtime (s): 7.17761993e-01
+Max runtime (s): 7.28299856e-01
+stdev: 3.14765467e-03
+
+Approximation error (manual batching with FFTW_EXHAUSTIVE):
+L1 error: 3.90684359e-12
+
+Run statistics for Manual batching with FFTW_EXHAUSTIVE
+Total number of samples taken: 20
+Mean runtime (s): 6.65441275e-02
+Min runtime (s): 6.46619797e-02
+Max runtime (s): 7.00581074e-02
+stdev: 1.24295763e-03
+
+
+Nv=64 Ns=12 Threads=32
+
+
+Run arguments:
+Nv = 64
+Ns = 12
+trials = 20
+Approximation error (Plan many):
+L1 error: 2.20862e-12
+
+Run statistics for Plan many
+Total number of samples taken: 20
+Mean runtime (s): 4.03961301e-01
+Min runtime (s): 4.01281118e-01
+Max runtime (s): 4.11147833e-01
+stdev: 1.98711904e-03
+
+Approximation error (manual batching with FFTW_ESTIMATE):
+L1 error: 3.09405792e-12
+
+Run statistics for Manual batching with FFTW_ESTIMATE
+Total number of samples taken: 20
+Mean runtime (s): 4.03641164e-01
+Min runtime (s): 4.02557135e-01
+Max runtime (s): 4.06672955e-01
+stdev: 1.15478318e-03
+
+Approximation error (manual batching with FFTW_EXHAUSTIVE):
+L1 error: 3.90684359e-12
+
+Run statistics for Manual batching with FFTW_EXHAUSTIVE
+Total number of samples taken: 20
+Mean runtime (s): 5.37281036e-02
+Min runtime (s): 5.13780117e-02
+Max runtime (s): 5.75640202e-02
+stdev: 1.25618772e-03
+
+
+Nv=64 Ns=12 Threads=64
+
+
+Run arguments:
+Nv = 64
+Ns = 12
+trials = 20
+Approximation error (Plan many):
+L1 error: 2.20862e-12
+
+Run statistics for Plan many
+Total number of samples taken: 20
+Mean runtime (s): 2.02114236e-01
+Min runtime (s): 2.00572014e-01
+Max runtime (s): 2.09360838e-01
+stdev: 1.86747844e-03
+
+Approximation error (manual batching with FFTW_ESTIMATE):
+L1 error: 3.09405792e-12
+
+Run statistics for Manual batching with FFTW_ESTIMATE
+Total number of samples taken: 20
+Mean runtime (s): 2.03250110e-01
+Min runtime (s): 2.01689959e-01
+Max runtime (s): 2.05811977e-01
+stdev: 1.11937289e-03
+
+Approximation error (manual batching with FFTW_EXHAUSTIVE):
+L1 error: 3.90684359e-12
+
+Run statistics for Manual batching with FFTW_EXHAUSTIVE
+Total number of samples taken: 20
+Mean runtime (s): 4.91366506e-02
+Min runtime (s): 4.64079380e-02
+Max runtime (s): 6.46269321e-02
+stdev: 3.75037197e-03
+
+
+Nv=64 Ns=12 Threads=128
+
+
+Run arguments:
+Nv = 64
+Ns = 12
+trials = 20
+Approximation error (Plan many):
+L1 error: 2.20862e-12
+
+Run statistics for Plan many
+Total number of samples taken: 20
+Mean runtime (s): 1.10192394e-01
+Min runtime (s): 1.07941866e-01
+Max runtime (s): 1.13878965e-01
+stdev: 1.54788159e-03
+
+Approximation error (manual batching with FFTW_ESTIMATE):
+L1 error: 3.09405792e-12
+
+Run statistics for Manual batching with FFTW_ESTIMATE
+Total number of samples taken: 20
+Mean runtime (s): 1.09513259e-01
+Min runtime (s): 1.07823133e-01
+Max runtime (s): 1.10920906e-01
+stdev: 8.58277789e-04
+
+Approximation error (manual batching with FFTW_EXHAUSTIVE):
+L1 error: 3.90684359e-12
+
+Run statistics for Manual batching with FFTW_EXHAUSTIVE
+Total number of samples taken: 20
+Mean runtime (s): 6.30667925e-02
+Min runtime (s): 5.85670471e-02
+Max runtime (s): 1.07956171e-01
+stdev: 1.06282448e-02
+
+
+Nv=32 Ns=32 Threads=1
+
+
+Run arguments:
+Nv = 32
+Ns = 32
+trials = 20
+Approximation error (Plan many):
+L1 error: 2.64718e-12
+
+Run statistics for Plan many
+Total number of samples taken: 20
+Mean runtime (s): 2.79475248e-01
+Min runtime (s): 2.76087999e-01
+Max runtime (s): 3.10585976e-01
+stdev: 7.63875803e-03
+
+Approximation error (manual batching with FFTW_ESTIMATE):
+L1 error: 3.71973263e-12
+
+Run statistics for Manual batching with FFTW_ESTIMATE
+Total number of samples taken: 20
+Mean runtime (s): 2.73642635e-01
+Min runtime (s): 2.73244858e-01
+Max runtime (s): 2.74155855e-01
+stdev: 2.77115784e-04
+
+Approximation error (manual batching with FFTW_EXHAUSTIVE):
+L1 error: 4.54007779e-12
+
+Run statistics for Manual batching with FFTW_EXHAUSTIVE
+Total number of samples taken: 20
+Mean runtime (s): 1.16929698e-01
+Min runtime (s): 1.16176844e-01
+Max runtime (s): 1.20416164e-01
+stdev: 9.67535118e-04
+
+
+Nv=32 Ns=32 Threads=2
+
+
+Run arguments:
+Nv = 32
+Ns = 32
+trials = 20
+Approximation error (Plan many):
+L1 error: 2.64718e-12
+
+Run statistics for Plan many
+Total number of samples taken: 20
+Mean runtime (s): 1.37219512e-01
+Min runtime (s): 1.36252880e-01
+Max runtime (s): 1.52257919e-01
+stdev: 3.54990634e-03
+
+Approximation error (manual batching with FFTW_ESTIMATE):
+L1 error: 3.71973263e-12
+
+Run statistics for Manual batching with FFTW_ESTIMATE
+Total number of samples taken: 20
+Mean runtime (s): 1.37688041e-01
+Min runtime (s): 1.37272120e-01
+Max runtime (s): 1.38592005e-01
+stdev: 2.77566974e-04
+
+Approximation error (manual batching with FFTW_EXHAUSTIVE):
+L1 error: 4.54007779e-12
+
+Run statistics for Manual batching with FFTW_EXHAUSTIVE
+Total number of samples taken: 20
+Mean runtime (s): 5.92527509e-02
+Min runtime (s): 5.84521294e-02
+Max runtime (s): 6.04488850e-02
+stdev: 3.93495352e-04
+
+
+Nv=32 Ns=32 Threads=4
+
+
+Run arguments:
+Nv = 32
+Ns = 32
+trials = 20
+Approximation error (Plan many):
+L1 error: 2.64718e-12
+
+Run statistics for Plan many
+Total number of samples taken: 20
+Mean runtime (s): 7.38408446e-02
+Min runtime (s): 7.05800056e-02
+Max runtime (s): 8.20620060e-02
+stdev: 2.86932129e-03
+
+Approximation error (manual batching with FFTW_ESTIMATE):
+L1 error: 3.71973263e-12
+
+Run statistics for Manual batching with FFTW_ESTIMATE
+Total number of samples taken: 20
+Mean runtime (s): 7.15214729e-02
+Min runtime (s): 7.11700916e-02
+Max runtime (s): 7.23490715e-02
+stdev: 2.95445969e-04
+
+Approximation error (manual batching with FFTW_EXHAUSTIVE):
+L1 error: 4.54007779e-12
+
+Run statistics for Manual batching with FFTW_EXHAUSTIVE
+Total number of samples taken: 20
+Mean runtime (s): 3.00917745e-02
+Min runtime (s): 2.94520855e-02
+Max runtime (s): 3.19449902e-02
+stdev: 6.62460935e-04
+
+
+Nv=32 Ns=32 Threads=8
+
+
+Run arguments:
+Nv = 32
+Ns = 32
+trials = 20
+Approximation error (Plan many):
+L1 error: 2.64718e-12
+
+Run statistics for Plan many
+Total number of samples taken: 20
+Mean runtime (s): 3.55951905e-02
+Min runtime (s): 3.52637768e-02
+Max runtime (s): 3.97119522e-02
+stdev: 9.94264789e-04
+
+Approximation error (manual batching with FFTW_ESTIMATE):
+L1 error: 3.71973263e-12
+
+Run statistics for Manual batching with FFTW_ESTIMATE
+Total number of samples taken: 20
+Mean runtime (s): 3.62393379e-02
+Min runtime (s): 3.60879898e-02
+Max runtime (s): 3.79128456e-02
+stdev: 3.97994036e-04
+
+Approximation error (manual batching with FFTW_EXHAUSTIVE):
+L1 error: 4.54007779e-12
+
+Run statistics for Manual batching with FFTW_EXHAUSTIVE
+Total number of samples taken: 20
+Mean runtime (s): 1.51060581e-02
+Min runtime (s): 1.48270130e-02
+Max runtime (s): 1.81601048e-02
+stdev: 7.28333043e-04
+
+
+Nv=32 Ns=32 Threads=16
+
+
+Run arguments:
+Nv = 32
+Ns = 32
+trials = 20
+Approximation error (Plan many):
+L1 error: 2.64718e-12
+
+Run statistics for Plan many
+Total number of samples taken: 20
+Mean runtime (s): 1.76760435e-02
+Min runtime (s): 1.72448158e-02
+Max runtime (s): 2.07960606e-02
+stdev: 7.77839771e-04
+
+Approximation error (manual batching with FFTW_ESTIMATE):
+L1 error: 3.71973263e-12
+
+Run statistics for Manual batching with FFTW_ESTIMATE
+Total number of samples taken: 20
+Mean runtime (s): 1.77054405e-02
+Min runtime (s): 1.75619125e-02
+Max runtime (s): 1.81159973e-02
+stdev: 1.62720324e-04
+
+Approximation error (manual batching with FFTW_EXHAUSTIVE):
+L1 error: 4.54007779e-12
+
+Run statistics for Manual batching with FFTW_EXHAUSTIVE
+Total number of samples taken: 20
+Mean runtime (s): 8.45209360e-03
+Min runtime (s): 8.08310509e-03
+Max runtime (s): 1.31590366e-02
+stdev: 1.11432013e-03
+
+
+Nv=32 Ns=32 Threads=32
+
+
+Run arguments:
+Nv = 32
+Ns = 32
+trials = 20
+Approximation error (Plan many):
+L1 error: 2.64718e-12
+
+Run statistics for Plan many
+Total number of samples taken: 20
+Mean runtime (s): 1.01429105e-02
+Min runtime (s): 9.86313820e-03
+Max runtime (s): 1.31089687e-02
+stdev: 7.01757083e-04
+
+Approximation error (manual batching with FFTW_ESTIMATE):
+L1 error: 3.71973263e-12
+
+Run statistics for Manual batching with FFTW_ESTIMATE
+Total number of samples taken: 20
+Mean runtime (s): 1.00470662e-02
+Min runtime (s): 9.98902321e-03
+Max runtime (s): 1.03359222e-02
+stdev: 8.50797125e-05
+
+Approximation error (manual batching with FFTW_EXHAUSTIVE):
+L1 error: 4.54007779e-12
+
+Run statistics for Manual batching with FFTW_EXHAUSTIVE
+Total number of samples taken: 20
+Mean runtime (s): 5.55542707e-03
+Min runtime (s): 5.11908531e-03
+Max runtime (s): 1.15461349e-02
+stdev: 1.42169923e-03
+
+
+Nv=32 Ns=32 Threads=64
+
+
+Run arguments:
+Nv = 32
+Ns = 32
+trials = 20
+Approximation error (Plan many):
+L1 error: 2.64718e-12
+
+Run statistics for Plan many
+Total number of samples taken: 20
+Mean runtime (s): 5.68940639e-03
+Min runtime (s): 5.40995598e-03
+Max runtime (s): 8.84079933e-03
+stdev: 7.49026179e-04
+
+Approximation error (manual batching with FFTW_ESTIMATE):
+L1 error: 3.71973263e-12
+
+Run statistics for Manual batching with FFTW_ESTIMATE
+Total number of samples taken: 20
+Mean runtime (s): 5.67054749e-03
+Min runtime (s): 5.51891327e-03
+Max runtime (s): 6.32190704e-03
+stdev: 2.25896725e-04
+
+Approximation error (manual batching with FFTW_EXHAUSTIVE):
+L1 error: 4.54007779e-12
+
+Run statistics for Manual batching with FFTW_EXHAUSTIVE
+Total number of samples taken: 20
+Mean runtime (s): 4.59033251e-03
+Min runtime (s): 3.66687775e-03
+Max runtime (s): 1.82521343e-02
+stdev: 3.22838539e-03
+
+
+Nv=32 Ns=32 Threads=128
+
+
+Run arguments:
+Nv = 32
+Ns = 32
+trials = 20
+Approximation error (Plan many):
+L1 error: 2.64718e-12
+
+Run statistics for Plan many
+Total number of samples taken: 20
+Mean runtime (s): 3.95569801e-03
+Min runtime (s): 3.59201431e-03
+Max runtime (s): 8.23807716e-03
+stdev: 1.01717213e-03
+
+Approximation error (manual batching with FFTW_ESTIMATE):
+L1 error: 3.71973263e-12
+
+Run statistics for Manual batching with FFTW_ESTIMATE
+Total number of samples taken: 20
+Mean runtime (s): 3.90625000e-03
+Min runtime (s): 3.68714333e-03
+Max runtime (s): 5.10406494e-03
+stdev: 3.38990219e-04
+
+Approximation error (manual batching with FFTW_EXHAUSTIVE):
+L1 error: 4.54007779e-12
+
+Run statistics for Manual batching with FFTW_EXHAUSTIVE
+Total number of samples taken: 20
+Mean runtime (s): 5.00793457e-03
+Min runtime (s): 3.09395790e-03
+Max runtime (s): 3.07619572e-02
+stdev: 6.30492652e-03
+
+
+Nv=64 Ns=32 Threads=1
+
+
+Run arguments:
+Nv = 64
+Ns = 32
+trials = 20
+Approximation error (Plan many):
+L1 error: 5.88964e-12
+
+Run statistics for Plan many
+Total number of samples taken: 20
+Mean runtime (s): 2.64148883e+01
+Min runtime (s): 2.63728120e+01
+Max runtime (s): 2.66747680e+01
+stdev: 6.28409567e-02
+
+Approximation error (manual batching with FFTW_ESTIMATE):
+L1 error: 8.25082112e-12
+
+Run statistics for Manual batching with FFTW_ESTIMATE
+Total number of samples taken: 20
+Mean runtime (s): 2.63861769e+01
+Min runtime (s): 2.62809231e+01
+Max runtime (s): 2.64220490e+01
+stdev: 2.85824614e-02
+
+Approximation error (manual batching with FFTW_EXHAUSTIVE):
+L1 error: 1.04182496e-11
+
+Run statistics for Manual batching with FFTW_EXHAUSTIVE
+Total number of samples taken: 20
+Mean runtime (s): 2.58262657e+00
+Min runtime (s): 2.57991481e+00
+Max runtime (s): 2.59072709e+00
+stdev: 2.99225490e-03
+
+
+Nv=64 Ns=32 Threads=2
+
+
+Run arguments:
+Nv = 64
+Ns = 32
+trials = 20
+Approximation error (Plan many):
+L1 error: 5.88964e-12
+
+Run statistics for Plan many
+Total number of samples taken: 20
+Mean runtime (s): 1.32675992e+01
+Min runtime (s): 1.31763489e+01
+Max runtime (s): 1.33994100e+01
+stdev: 5.36371088e-02
+
+Approximation error (manual batching with FFTW_ESTIMATE):
+L1 error: 8.25082112e-12
+
+Run statistics for Manual batching with FFTW_ESTIMATE
+Total number of samples taken: 20
+Mean runtime (s): 1.32837801e+01
+Min runtime (s): 1.32139611e+01
+Max runtime (s): 1.33709440e+01
+stdev: 2.81395039e-02
+
+Approximation error (manual batching with FFTW_EXHAUSTIVE):
+L1 error: 1.04182496e-11
+
+Run statistics for Manual batching with FFTW_EXHAUSTIVE
+Total number of samples taken: 20
+Mean runtime (s): 1.30859718e+00
+Min runtime (s): 1.30668712e+00
+Max runtime (s): 1.31185699e+00
+stdev: 1.32656328e-03
+
+
+Nv=64 Ns=32 Threads=4
+
+
+Run arguments:
+Nv = 64
+Ns = 32
+trials = 20
+Approximation error (Plan many):
+L1 error: 5.88964e-12
+
+Run statistics for Plan many
+Total number of samples taken: 20
+Mean runtime (s): 7.60020980e+00
+Min runtime (s): 7.57579303e+00
+Max runtime (s): 7.71794200e+00
+stdev: 3.35096257e-02
+
+Approximation error (manual batching with FFTW_ESTIMATE):
+L1 error: 8.25082112e-12
+
+Run statistics for Manual batching with FFTW_ESTIMATE
+Total number of samples taken: 20
+Mean runtime (s): 7.62152132e+00
+Min runtime (s): 7.59608698e+00
+Max runtime (s): 7.66481090e+00
+stdev: 1.93716479e-02
+
+Approximation error (manual batching with FFTW_EXHAUSTIVE):
+L1 error: 1.04182496e-11
+
+Run statistics for Manual batching with FFTW_EXHAUSTIVE
+Total number of samples taken: 20
+Mean runtime (s): 6.54036021e-01
+Min runtime (s): 6.51291132e-01
+Max runtime (s): 6.56212091e-01
+stdev: 1.74411508e-03
+
+
+Nv=64 Ns=32 Threads=8
+
+
+Run arguments:
+Nv = 64
+Ns = 32
+trials = 20
+Approximation error (Plan many):
+L1 error: 5.88964e-12
+
+Run statistics for Plan many
+Total number of samples taken: 20
+Mean runtime (s): 3.86527960e+00
+Min runtime (s): 3.85530496e+00
+Max runtime (s): 3.90885901e+00
+stdev: 1.25186517e-02
+
+Approximation error (manual batching with FFTW_ESTIMATE):
+L1 error: 8.25082112e-12
+
+Run statistics for Manual batching with FFTW_ESTIMATE
+Total number of samples taken: 20
+Mean runtime (s): 3.88234127e+00
+Min runtime (s): 3.85926104e+00
+Max runtime (s): 3.94867420e+00
+stdev: 2.07471480e-02
+
+Approximation error (manual batching with FFTW_EXHAUSTIVE):
+L1 error: 1.04182496e-11
+
+Run statistics for Manual batching with FFTW_EXHAUSTIVE
+Total number of samples taken: 20
+Mean runtime (s): 3.27875137e-01
+Min runtime (s): 3.26581001e-01
+Max runtime (s): 3.29626083e-01
+stdev: 1.07241421e-03
+
+
+Nv=64 Ns=32 Threads=16
+
+
+Run arguments:
+Nv = 64
+Ns = 32
+trials = 20
+Approximation error (Plan many):
+L1 error: 5.88964e-12
+
+Run statistics for Plan many
+Total number of samples taken: 20
+Mean runtime (s): 1.87881429e+00
+Min runtime (s): 1.86641598e+00
+Max runtime (s): 1.90070796e+00
+stdev: 8.26023011e-03
+
+Approximation error (manual batching with FFTW_ESTIMATE):
+L1 error: 8.25082112e-12
+
+Run statistics for Manual batching with FFTW_ESTIMATE
+Total number of samples taken: 20
+Mean runtime (s): 1.86889560e+00
+Min runtime (s): 1.85456705e+00
+Max runtime (s): 1.90287399e+00
+stdev: 1.30404329e-02
+
+Approximation error (manual batching with FFTW_EXHAUSTIVE):
+L1 error: 1.04182496e-11
+
+Run statistics for Manual batching with FFTW_EXHAUSTIVE
+Total number of samples taken: 20
+Mean runtime (s): 1.74775350e-01
+Min runtime (s): 1.70065880e-01
+Max runtime (s): 1.77775860e-01
+stdev: 1.99734350e-03
+
+
+Nv=64 Ns=32 Threads=32
+
+
+Run arguments:
+Nv = 64
+Ns = 32
+trials = 20
+Approximation error (Plan many):
+L1 error: 5.88964e-12
+
+Run statistics for Plan many
+Total number of samples taken: 20
+Mean runtime (s): 1.06231610e+00
+Min runtime (s): 1.05846786e+00
+Max runtime (s): 1.08174181e+00
+stdev: 4.87772224e-03
+
+Approximation error (manual batching with FFTW_ESTIMATE):
+L1 error: 8.25082112e-12
+
+Run statistics for Manual batching with FFTW_ESTIMATE
+Total number of samples taken: 20
+Mean runtime (s): 1.06005936e+00
+Min runtime (s): 1.05605888e+00
+Max runtime (s): 1.06712294e+00
+stdev: 3.49634196e-03
+
+Approximation error (manual batching with FFTW_EXHAUSTIVE):
+L1 error: 1.04182496e-11
+
+Run statistics for Manual batching with FFTW_EXHAUSTIVE
+Total number of samples taken: 20
+Mean runtime (s): 1.28102732e-01
+Min runtime (s): 1.20346069e-01
+Max runtime (s): 1.40568018e-01
+stdev: 4.99296954e-03
+
+
+Nv=64 Ns=32 Threads=64
+
+
+Run arguments:
+Nv = 64
+Ns = 32
+trials = 20
+Approximation error (Plan many):
+L1 error: 5.88964e-12
+
+Run statistics for Plan many
+Total number of samples taken: 20
+Mean runtime (s): 5.38179517e-01
+Min runtime (s): 5.34139156e-01
+Max runtime (s): 5.54904222e-01
+stdev: 4.32895771e-03
+
+Approximation error (manual batching with FFTW_ESTIMATE):
+L1 error: 8.25082112e-12
+
+Run statistics for Manual batching with FFTW_ESTIMATE
+Total number of samples taken: 20
+Mean runtime (s): 5.39975417e-01
+Min runtime (s): 5.37647963e-01
+Max runtime (s): 5.42886019e-01
+stdev: 1.45284040e-03
+
+Approximation error (manual batching with FFTW_EXHAUSTIVE):
+L1 error: 1.04182496e-11
+
+Run statistics for Manual batching with FFTW_EXHAUSTIVE
+Total number of samples taken: 20
+Mean runtime (s): 1.22158146e-01
+Min runtime (s): 1.18864059e-01
+Max runtime (s): 1.34914160e-01
+stdev: 3.37633369e-03
+
+
+Nv=64 Ns=32 Threads=128
+
+
+Run arguments:
+Nv = 64
+Ns = 32
+trials = 20
+Approximation error (Plan many):
+L1 error: 5.88964e-12
+
+Run statistics for Plan many
+Total number of samples taken: 20
+Mean runtime (s): 2.70640993e-01
+Min runtime (s): 2.65009880e-01
+Max runtime (s): 2.83607006e-01
+stdev: 4.53367762e-03
+
+Approximation error (manual batching with FFTW_ESTIMATE):
+L1 error: 8.25082112e-12
+
+Run statistics for Manual batching with FFTW_ESTIMATE
+Total number of samples taken: 20
+Mean runtime (s): 2.71768022e-01
+Min runtime (s): 2.67452002e-01
+Max runtime (s): 2.77670860e-01
+stdev: 2.71025133e-03
+
+Approximation error (manual batching with FFTW_EXHAUSTIVE):
+L1 error: 1.04182496e-11
+
+Run statistics for Manual batching with FFTW_EXHAUSTIVE
+Total number of samples taken: 20
+Mean runtime (s): 1.84267855e-01
+Min runtime (s): 1.78119898e-01
+Max runtime (s): 2.27990866e-01
+stdev: 1.05990204e-02
+
+

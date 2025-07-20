@@ -61,9 +61,9 @@ void BoltzmannOperator<FFTW_Backend>::initialize() {
         std::cout << "Failed to import wisdom from file: " << wisdom_fname << "\n";
     }
 
-    fft_plan  = fftw_plan_dft_3d(Nvx, Nvy, Nvz, f, f_hat, FFTW_FORWARD, FFTW_ESTIMATE);
-    ifft_plan = fftw_plan_dft_3d(Nvx, Nvy, Nvz, f_hat, f, FFTW_BACKWARD, FFTW_ESTIMATE);
-;
+    fft_plan  = fftw_plan_dft_3d(Nvx, Nvy, Nvz, f, f_hat, FFTW_FORWARD, FFTW_EXHAUSTIVE);
+    ifft_plan = fftw_plan_dft_3d(Nvx, Nvy, Nvz, f_hat, f, FFTW_BACKWARD, FFTW_EXHAUSTIVE);
+
     // Export wisdom immediately after plan creation using the specified filename
     fftw_export_wisdom_to_filename(wisdom_fname.c_str());
 
@@ -153,9 +153,12 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
     const std::vector<double>& gl_wts = gl_quadrature->getWeights();
     const std::vector<double>& gl_nodes = gl_quadrature->getNodes();
     const std::vector<double>& spherical_wts = spherical_quadrature->getWeights();
+    const std::vector<double>& sx = spherical_quadrature->getx();
+    const std::vector<double>& sy = spherical_quadrature->gety();
+    const std::vector<double>& sz = spherical_quadrature->getz();
 
     int grid_size = Nvx * Nvy * Nvz; // Total number of grid points
-    int batch_size = N_gl * N_spherical; // Total number of grid_size batches
+    //int batch_size = N_gl * N_spherical; // Total number of grid_size batches
     double fft_scale = 1.0 / grid_size; // Scaling used to normalize transforms
 
     #pragma omp parallel
@@ -262,10 +265,9 @@ void BoltzmannOperator<FFTW_Backend>::computeCollision(double * Q, const double 
                         // switch to a reduction approach using temporaries since Nvidia does not support
                         // complex reductions in OpenMP.
                         #pragma omp atomic
-                        {
-                            Q_gain_hat[idx3][0] += weight * beta1 * transform_prod_hat[idx5][0];
-                            Q_gain_hat[idx3][1] += weight * beta1 * transform_prod_hat[idx5][1];
-                        }
+                        Q_gain_hat[idx3][0] += weight * beta1 * transform_prod_hat[idx5][0];
+                        #pragma omp atomic
+                        Q_gain_hat[idx3][1] += weight * beta1 * transform_prod_hat[idx5][1];
                     }
                 }
             }
