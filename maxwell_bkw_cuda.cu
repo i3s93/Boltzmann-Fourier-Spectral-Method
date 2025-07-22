@@ -129,18 +129,12 @@ int main(int argc, char** argv) {
     BoltzmannOperator<CUDA_Backend> collision_operator(gl_quadrature, spherical_quadrature, 
         Nv, Nv, Nv, gamma, b_gamma, L);
 
-    // Initialize the operator and precompute the transform weights
+    // Initialize the operator
     double initialize_time = omp_get_wtime();
     collision_operator.initialize();
     double initialize_end_time = omp_get_wtime();
     double initialize_total_time = initialize_end_time - initialize_time;
     std::cout << "Initialization time (s): " << initialize_total_time << " seconds\n";
-
-    double precompute_time = omp_get_wtime();
-    collision_operator.precomputeTransformWeights();
-    double precompute_end_time = omp_get_wtime();
-    double precompute_total_time = precompute_end_time - precompute_time;
-    std::cout << "Precomputation time (s): " << precompute_total_time << " seconds\n";
 
     // Container to hold the timing data
     std::vector<double> collision_times;

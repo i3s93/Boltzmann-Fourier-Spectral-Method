@@ -4,11 +4,10 @@
 #include <cmath>
 #include <string>
 #include <memory>
-#include <limits>
 
 #include <omp.h>
+#include <cuComplex.h>
 #include <cuda_runtime.h>
-#include <cutensornet.h>
 #include <cufft.h>
 
 #include "BoltzmannOperator.hpp"
@@ -16,40 +15,27 @@
 #include "AbstractCollisionOperator.hpp"
 #include "../Quadratures/GaussLegendre.hpp"
 #include "../Quadratures/SphericalDesign.hpp"
-
-// This function is related to the interaction kernel in the Boltzmann operator and will likely be
-// moved outside of this class for better modularity.
-template<typename T>
-T sincc(T x){
-    T eps = std::numeric_limits<T>::epsilon();
-    return std::sin(x + eps)/(x + eps);
-}
-
-#define HANDLE_ERROR(x)                                           \
-{ const auto err = x;                                             \
-  if( err != CUTENSORNET_STATUS_SUCCESS )                         \
-  { printf("Error: %s in line %d\n", cutensornetGetErrorString(err), __LINE__); \
-    fflush(stdout);                                               \
-  }                                                               \
-};
+#include "../Utilities/constants.hpp"
 
 #define HANDLE_CUDA_ERROR(x)                                      \
-{ const auto err = x;                                             \
-  if( err != cudaSuccess )                                        \
-  { printf("CUDA Error: %s in line %d\n", cudaGetErrorString(err), __LINE__); \
-    fflush(stdout);                                               \
-  }                                                               \
-};
+{                                                                 \
+    const auto err = x;                                           \
+    if (err != cudaSuccess) {                                     \
+        std::cerr << "CUDA Error: " << cudaGetErrorString(err)    \
+                  << " at " << __FILE__ << ":" << __LINE__ << std::endl; \
+        std::exit(EXIT_FAILURE);                                  \
+    }                                                             \
+}
 
-#define CUFFT_CALL(func)                                                      \
-    {                                                                         \
-        cufftResult status = (func);                                          \
-        if (status != CUFFT_SUCCESS) {                                        \
-            std::cerr << "cuFFT error at " << __FILE__ << ":" << __LINE__     \
-                      << " code " << status << " (" << cufftGetErrorString(status) << ")" << std::endl; \
-            std::exit(EXIT_FAILURE);                                          \
-        }                                                                     \
-    }
+#define CUFFT_CALL(x)                                                     \
+{                                                                         \
+    const auto status = x;                                                \
+    if (status != CUFFT_SUCCESS) {                                        \
+        std::cerr << "cuFFT error at " << __FILE__ << ":" << __LINE__     \
+                    << " code " << status << " (" << cufftGetErrorString(status) << ")" << std::endl; \
+        std::exit(EXIT_FAILURE);                                          \
+    }                                                                     \
+}
 
 std::string cufftGetErrorString(cufftResult error);
 
@@ -69,9 +55,6 @@ public:
 
     // Method to setup the CUDA resources (must be defined)
     void initialize() override;
-
-    // Precomputes the transform weights used in the cuFFT implementation
-    void precomputeTransformWeights();
 
     // Returns the name of the backend being used
     std::string getBackendName() const override {
@@ -103,57 +86,47 @@ protected:
     const std::shared_ptr<GaussLegendreQuadrature> gl_quadrature;
     const std::shared_ptr<SphericalQuadrature> spherical_quadrature;
 
-    // Fourier modes for the velocity domain store only on the host side
-    std::vector<int> lx_h, ly_h, lz_h;
-
 private:
 
     // Plans for the transforms
     cufftHandle plan3d;
     cufftHandle plan3d_batched;
 
-/*
-    // Storage for the fast contraction algorithm
-    cutensornetHandle_t cutensornet_handle; // Library handle for cuTensorNet
-    cutensornetNetworkDescriptor_t descNet; // Network descriptor for the contraction
-    cutensornetContractionOptimizerConfig_t optimizerConfig; // Optimizer configuration for the contraction
-    cutensornetContractionOptimizerInfo_t optimizerInfo; // Optimizer info for the contraction
-    cutensornetWorkspaceDescriptor_t workDesc; // Workspace descriptor for the contraction
-    void * workspace; // Workspace (device) for the contraction operation
-    cutensornetContractionPlan_t contraction_plan; // Plan for the contraction operation
-    cutensornetContractionAutotunePreference_t autotunePref; // Autotune preference for the contraction
-*/
-
     // Device arrays used to evaluate the collision operator
     // We shall use _h to denote arrays stored on the host (CPU)
     // Otherwise, the arrays are stored on the device (GPU)
-    Complex * alpha1;
-    Complex * beta1;
-    double * beta2;
+    double * gl_wts;
+    double * gl_nodes;
 
-    Complex * radial_term;
-    Complex * spherical_wts;
+    double * spherical_wts;
+    double * sx;
+    double * sy;
+    double * sz;
 
-    Complex * f;
-    Complex * f_hat;
-    
-    Complex * alpha1_times_f;
-    Complex * alpha1_times_f_hat; 
-    
-    Complex * alpha2_times_f; 
-    Complex * alpha2_times_f_hat; 
-    
-    Complex * beta2_times_f; 
-    Complex * beta2_times_f_hat; 
-    
-    Complex * transform_prod; 
-    Complex * transform_prod_hat;
+    int * lx;
+    int * ly;
+    int * lz;
 
-    Complex * Q_gain_hat; 
-    Complex * Q_gain;
+    cuDoubleComplex * f;
+    cuDoubleComplex * f_hat;
+    
+    cuDoubleComplex * alpha1_times_f;
+    cuDoubleComplex * alpha1_times_f_hat; 
+    
+    cuDoubleComplex * alpha2_times_f; 
+    cuDoubleComplex * alpha2_times_f_hat; 
+    
+    cuDoubleComplex * beta2_times_f; 
+    cuDoubleComplex * beta2_times_f_hat; 
+    
+    cuDoubleComplex * transform_prod; 
+    cuDoubleComplex * transform_prod_hat;
 
-    Complex * Q_loss_hat; 
-    Complex * Q_loss;
+    cuDoubleComplex * Q_gain_hat; 
+    cuDoubleComplex * Q_gain;
+
+    cuDoubleComplex * Q_loss_hat; 
+    cuDoubleComplex * Q_loss;
 
 };
 
