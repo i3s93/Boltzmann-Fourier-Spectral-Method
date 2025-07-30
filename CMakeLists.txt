@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.18)
 # This has to be set before project()
 # Otherwise the wrong version of __CUDA__ARCH__ is set
 if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
-  set(CMAKE_CUDA_ARCHITECTURES 86)
+  set(CMAKE_CUDA_ARCHITECTURES 80)
 endif()
 
 # Name for the project
@@ -20,6 +20,7 @@ add_executable(maxwell_bkw_fftw_ex maxwell_bkw_fftw.cpp)
 add_executable(maxwell_bkw_cuda_ex maxwell_bkw_cuda.cu)
 
 add_executable(fftw_benchmark_ex fftw_benchmark.cpp)
+add_executable(cufft_benchmark_ex cufft_benchmark.cu)
 add_executable(loop_benchmark_cpu_ex loop_benchmark_cpu.cpp)
 add_executable(loop_benchmark_gpu_ex loop_benchmark_gpu.cpp)
 
@@ -177,7 +178,7 @@ endmacro()
 if(CMAKE_C_COMPILER_ID MATCHES "NVHPC" AND CMAKE_CXX_COMPILER_ID MATCHES "NVHPC")
     message(STATUS "Using NVIDIA HPC compilers (C and C++)")
 
-    add_flags_if_avail("-O3" "-fast" "-mp" "-gpu=cc80")
+    add_flags_if_avail("-O3" "-fast" "-mp" "-gpu=cc80,sm_80")
 
 else()
     # standard flags for C and C++
@@ -222,6 +223,7 @@ target_link_libraries(maxwell_bkw_fftw_ex PRIVATE Boltzmann)
 target_link_libraries(maxwell_bkw_cuda_ex PRIVATE Boltzmann)
 
 target_link_libraries(fftw_benchmark_ex PRIVATE Boltzmann)
+target_link_libraries(cufft_benchmark_ex PRIVATE Boltzmann)
 target_link_libraries(loop_benchmark_cpu_ex PRIVATE Boltzmann)
 target_link_libraries(loop_benchmark_gpu_ex PRIVATE Boltzmann)
 

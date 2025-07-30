@@ -179,6 +179,8 @@ void BoltzmannOperator<CUDA_Backend>::computeCollision(double * Q, const double 
 
     // Use tensor contraction over slices along modes 'r' and 's' to compute the following:
     // Q_gain_hat[i,j,k] = \sum_{r,s} radial_term[r] spherical_wts[s] beta1[r,i,j,k] transform_prod_hat[r,s,i,j,k]
+    //
+    // TO-DO: Overlap the initialization for Q_gain_hat with the copy from real to complex...
     HANDLE_CUDA_ERROR( cudaMemset(Q_gain_hat, 0.0, grid_size * sizeof(cuDoubleComplex)) ); // Initialize to zero
 
     // For now, just do the contraction using atomic adds
@@ -211,7 +213,7 @@ void BoltzmannOperator<CUDA_Backend>::computeCollision(double * Q, const double 
 
     // Compute Q = real(Q_gain) - real(Q_loss)
     num_blocks = std::max( int( grid_size / (2 * num_threads_per_block) ), 1 );
-    compute_Q_total<<<num_blocks, num_threads_per_block>>>(Q, Q_gain, beta2_times_f_hat, f_hat, grid_size);
+    compute_Q_total<<<num_blocks, num_threads_per_block>>>(Q, Q_gain, beta2_times_f, f, grid_size);
 
     cudaDeviceSynchronize(); // Ensure all device kernels have completed before returning
 

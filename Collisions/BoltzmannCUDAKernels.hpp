@@ -6,13 +6,13 @@
 #include <cuComplex.h>
 
 template<typename T>
-__host__ __device__ T eps() { return T(0); }
+__host__ __device__ inline T eps() {return T(0);}
 
 template<>
-__host__ __device__ float eps<float>() { return 1.1920929e-7f; }
+__host__ __device__ inline float eps<float>() {return 1.1920929e-7f;} 
 
 template<>
-__host__ __device__ double eps<double>() { return 2.220446049250313e-16; }
+__host__ __device__ inline double eps<double>() {return 2.220446049250313e-16;} 
 
 template<typename T>
 __host__ __device__
@@ -28,7 +28,7 @@ T sincc(T x) {
 #endif
 }
 
-__host__ __device__ inline Complex cuCconj(const cuDoubleComplex &z) {
+__host__ __device__ inline cuDoubleComplex cuCconj(const cuDoubleComplex &z) {
     return make_cuDoubleComplex(z.x, -z.y);
 }
 
@@ -88,7 +88,7 @@ __global__ void compute_beta2_times_f_hat(
 __global__ void compute_Q_total(
     double * __restrict__ Q, 
     const cuDoubleComplex * __restrict__ Q_gain, 
-    const cuDoubleComplex * __restrict__ beta2_times_f_hat, 
+    const cuDoubleComplex * __restrict__ beta2_times_f, 
     const cuDoubleComplex * __restrict__ f, 
     const int N);
 

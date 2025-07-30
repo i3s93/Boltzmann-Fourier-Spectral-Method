@@ -1,6 +1,5 @@
 #include "BoltzmannCUDAKernels.hpp"
 
-
 // CUDA kernel to copy a double array to a complex array
 __global__ void copy_to_complex(
     cuDoubleComplex * __restrict__ result, 
@@ -111,7 +110,7 @@ __global__ void atomic_tensor_contraction(
         int j = idx / Nvz;
         int k = idx % Nvz;
 
-        double norm_l = sqrt(lx[i]*lx[i] + ly[j]*ly[j] + lz[k]*lz[k]);
+        double norm_l = sqrt(static_cast<double>(lx[i]*lx[i] + ly[j]*ly[j] + lz[k]*lz[k]));
         double beta1 = weight * 4 * pi * b_gamma * sincc(pi * gl_nodes[r] * norm_l / (2 * L));
 
         cuDoubleComplex tmp;
@@ -148,8 +147,7 @@ __global__ void compute_beta2_times_f_hat(
         int j = (idx / Nvz) % Nvy;
         int k = idx % Nvz;
 
-        double norm_l = sqrt(lx[i]*lx[i] + ly[j]*ly[j] + lz[k]*lz[k]);
-
+        double norm_l = sqrt(static_cast<double>(lx[i]*lx[i] + ly[j]*ly[j] + lz[k]*lz[k]));
         double beta2 = 0;
         for (int r = 0; r < N_gl; ++r) {
             beta2 += 16 * pi * pi * b_gamma * gl_wts[r] * pow(gl_nodes[r], gamma+2) * sincc(pi * gl_nodes[r] * norm_l / L);
@@ -164,7 +162,7 @@ __global__ void compute_beta2_times_f_hat(
 __global__ void compute_Q_total(
     double * __restrict__ Q, 
     const cuDoubleComplex * __restrict__ Q_gain, 
-    const cuDoubleComplex * __restrict__ beta2_times_f_hat, 
+    const cuDoubleComplex * __restrict__ beta2_times_f, 
     const cuDoubleComplex * __restrict__ f, 
     const int N){
 
@@ -172,7 +170,7 @@ __global__ void compute_Q_total(
     int num_threads = blockDim.x * gridDim.x;
 
     for(int idx = tid; idx < N; idx += num_threads) {
-        cuDoubleComplex Q_loss = cuCmul(beta2_times_f_hat[idx], f[idx]);
+        cuDoubleComplex Q_loss = cuCmul(beta2_times_f[idx], f[idx]);
         Q[idx] = Q_gain[idx].x - Q_loss.x;
     }
 
